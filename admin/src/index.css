@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+@theme {
+  --color-cream: #F5F0E8;
+  --color-cream-dark: #EBE3D7;
+  --color-cream-darker: #E0D6C6;
+  --color-forest: #2D5A3E;
+  --color-text-dark: #1A1A1A;
+  --color-text-body: #4A4A4A;
+  --color-text-muted: #8A8A8A;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-cream);
+    color: var(--color-text-dark);
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+@layer components {
+  .card {
+    background-color: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+    padding: 1.5rem;
+    transition-property: box-shadow;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+  }
+  .card:hover {
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  }
+
+  .sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text-body);
+    transition-property: color, background-color;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+  }
+  .sidebar-link:hover {
+    background-color: var(--color-cream);
+    color: var(--color-forest);
+  }
+  .sidebar-link.active {
+    background-color: var(--color-cream);
+    color: var(--color-forest);
+  }
+
+  .btn-primary {
+    background-color: var(--color-forest);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    transition-property: background-color;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+  }
+  .btn-primary:hover {
+    background-color: color-mix(in oklab, var(--color-forest) 90%, transparent);
+  }
+
+  .btn-outline {
+    border: 1px solid var(--color-forest);
+    color: var(--color-forest);
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    transition-property: color, background-color;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+  }
+  .btn-outline:hover {
+    background-color: var(--color-forest);
+    color: white;
+  }
+
+  .btn-danger {
+    background-color: #ef4444;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    transition-property: background-color;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+  }
+  .btn-danger:hover {
+    background-color: #dc2626;
+  }
+}
