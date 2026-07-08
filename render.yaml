@@ -1,0 +1,93 @@
+databases:
+  - name: lebeza-db
+    plan: free
+    databaseName: healthcare
+    user: healthcare
+
+services:
+  # Backend API
+  - type: web
+    name: lebeza-backend
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: lebeza-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: 30d
+      - key: ADMIN_EMAIL
+        value: admin@healthcare.com
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: ADMIN_FULL_NAME
+        value: Super Admin
+      - key: RECEPTION_EMAIL
+        value: reception@lebeza.com
+      - key: RECEPTION_PASSWORD
+        sync: false
+      - key: RECEPTION_FULL_NAME
+        value: Reception Officer
+      - key: CONTENT_EDITOR_EMAIL
+        value: editor@lebeza.com
+      - key: CONTENT_EDITOR_PASSWORD
+        sync: false
+      - key: CONTENT_EDITOR_FULL_NAME
+        value: Content Editor
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASS
+        sync: false
+      - key: CONTACT_EMAIL_TO
+        sync: false
+      # Fill these in once the two static sites below have real URLs —
+      # Render assigns the URL only after the first deploy, so this is
+      # a manual follow-up edit in the dashboard, not something the
+      # blueprint can wire up automatically on the first pass.
+      - key: CLIENT_URL
+        sync: false
+      - key: ADMIN_URL
+        sync: false
+
+  # Public website
+  - type: web
+    name: lebeza-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://lebeza-backend.onrender.com/api
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+  # Admin panel
+  - type: web
+    name: lebeza-admin
+    runtime: static
+    rootDir: admin
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://lebeza-backend.onrender.com/api
+      - key: VITE_SITE_URL
+        value: https://lebeza-frontend.onrender.com
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
