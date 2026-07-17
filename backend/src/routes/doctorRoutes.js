@@ -4,11 +4,12 @@ import {
   getDoctorById, 
   createDoctor, 
   updateDoctor, 
-  deleteDoctor 
+  deleteDoctor,
+  uploadDoctorImage
 } from '../controllers/doctorController.js'
-import { authenticate } from '../middleware/auth.js'
-import { checkRole, ROLES } from '../middleware/roleCheck.js'
+import { authenticate, requirePermission } from '../middleware/auth.js'
 import { validate } from '../middleware/validate.js'
+import { uploadImage } from '../middleware/upload.js'
 import {
   createDoctorValidation,
   updateDoctorValidation,
@@ -20,6 +21,16 @@ const router = express.Router()
 // GET all doctors (public)
 router.get('/', getAllDoctors)
 
+// POST upload a doctor profile photo (admin only) — returns a URL to store
+// on the doctor's `image` field. Must come before '/:id' below.
+router.post(
+  '/upload/image',
+  authenticate,
+  requirePermission('manage_doctors'),
+  uploadImage.single('image'),
+  uploadDoctorImage
+)
+
 // GET doctor by ID (public)
 router.get('/:id', doctorIdValidation, validate, getDoctorById)
 
@@ -27,7 +38,7 @@ router.get('/:id', doctorIdValidation, validate, getDoctorById)
 router.post(
   '/',
   authenticate,
-  checkRole(ROLES.SUPER_ADMIN, ROLES.HOSPITAL_ADMIN),
+  requirePermission('manage_doctors'),
   createDoctorValidation,
   validate,
   createDoctor
@@ -37,13 +48,13 @@ router.post(
 router.put(
   '/:id',
   authenticate,
-  checkRole(ROLES.SUPER_ADMIN, ROLES.HOSPITAL_ADMIN),
+  requirePermission('manage_doctors'),
   updateDoctorValidation,
   validate,
   updateDoctor
 )
 
 // DELETE doctor (admin only)
-router.delete('/:id', authenticate, checkRole(ROLES.SUPER_ADMIN, ROLES.HOSPITAL_ADMIN), doctorIdValidation, validate, deleteDoctor)
+router.delete('/:id', authenticate, requirePermission('manage_doctors'), doctorIdValidation, validate, deleteDoctor)
 
 export default router

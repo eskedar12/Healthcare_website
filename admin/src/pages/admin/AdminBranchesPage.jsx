@@ -3,11 +3,11 @@ import { FiPlus, FiEdit, FiTrash2, FiMapPin, FiPhone, FiClock } from 'react-icon
 import BranchForm from '../../components/admin/BranchForm'
 import api from '../../services/api'
 import { useAdmin } from '../../hooks/useAdmin'
-import { canEditManagement } from '../../utils/permissions'
+import { canManageBranches } from '../../utils/permissions'
 
 const AdminBranchesPage = () => {
   const { user } = useAdmin()
-  const canEdit = canEditManagement(user?.role)
+  const canEdit = canManageBranches(user)
   const [branches, setBranches] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)

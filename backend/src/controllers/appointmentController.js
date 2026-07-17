@@ -10,6 +10,7 @@ import {
   getAppointmentStats as getAppointmentStatsService
 } from '../services/appointmentService.js';
 import { sendSuccess, sendCreated } from '../utils/response.js';
+import PDFDocument from 'pdfkit';
 
 export const createAppointment = async (req, res, next) => {
   try {
@@ -124,6 +125,71 @@ export const getStats = async (req, res, next) => {
     const filters = req.query;
     const stats = await getAppointmentStatsService(filters);
     sendSuccess(res, 'Appointment statistics retrieved successfully', stats);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const exportAppointmentsPDF = async (req, res, next) => {
+  try {
+    const filters = req.query;
+    const appointments = await getAllAppointments(filters);
+    
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename=appointments.pdf');
+    
+    const doc = new PDFDocument();
+    doc.pipe(res);
+    
+    // Header
+    doc.fontSize(20).text('Appointments Report', { align: 'center' });
+    doc.moveDown();
+    
+    // Table
+    const tableTop = 100;
+    const tableLeft = 50;
+    const colWidths = [80, 100, 100, 80, 80, 80, 70];
+    const headers = ['Ref', 'Patient', 'Doctor', 'Branch', 'Date', 'Time', 'Status'];
+    
+    // Draw headers
+    doc.fontSize(10).font('Helvetica-Bold');
+    let x = tableLeft;
+    headers.forEach((header, i) => {
+      doc.text(header, x, tableTop, { width: colWidths[i], align: 'left' });
+      x += colWidths[i];
+    });
+    
+    // Draw line under headers
+    doc.moveTo(tableLeft, tableTop + 20).lineTo(600, tableTop + 20).stroke();
+    
+    // Draw rows
+    doc.font('Helvetica');
+    let y = tableTop + 30;
+    appointments.forEach((appt) => {
+      x = tableLeft;
+      const rowData = [
+        appt.reference_number,
+        appt.patient_name,
+        appt.doctor_name || 'N/A',
+        appt.branch || 'N/A',
+        appt.date,
+        appt.time,
+        appt.status
+      ];
+      rowData.forEach((text, i) => {
+        doc.text(text, x, y, { width: colWidths[i], align: 'left' });
+        x += colWidths[i];
+      });
+      y += 20;
+      
+      // Add new page if needed
+      if (y > 700) {
+        doc.addPage();
+        y = 50;
+      }
+    });
+    
+    doc.end();
   } catch (error) {
     next(error);
   }

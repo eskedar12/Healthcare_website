@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { FiX } from 'react-icons/fi'
+import ImageUploadField from './ImageUploadField'
 
 // Normalize a field that may come back from the API as an array, a
 // comma-separated string, or null/undefined into a display string.
@@ -17,6 +18,7 @@ const DoctorForm = ({ doctor, onSave, onCancel }) => {
     department: doctor?.department || 'Psychiatry',
     email: doctor?.email || '',
     phone: doctor?.phone || '',
+    image: doctor?.image || '',
     bio: doctor?.bio || '',
     education: toDisplayString(doctor?.education),
     languages: toDisplayString(doctor?.languages),
@@ -47,6 +49,13 @@ const DoctorForm = ({ doctor, onSave, onCancel }) => {
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <ImageUploadField
+            label="Profile Photo"
+            value={formData.image}
+            onChange={(url) => setFormData({ ...formData, image: url })}
+            uploadUrl="/doctors/upload/image"
+          />
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="font-sans text-sm font-medium text-text-dark block mb-1">

@@ -7,8 +7,7 @@ import {
   deleteBranch,
   getBranchStats
 } from '../controllers/branchController.js';
-import { authenticate } from '../middleware/auth.js';
-import { checkRole, ROLES } from '../middleware/roleCheck.js';
+import { authenticate, requirePermission } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 import { 
   createBranchValidation, 
@@ -26,7 +25,7 @@ router.get('/:id', branchIdValidation, validate, getBranch);
 router.post(
   '/', 
   authenticate, 
-  checkRole(ROLES.SUPER_ADMIN, ROLES.HOSPITAL_ADMIN), 
+  requirePermission('manage_branches'), 
   createBranchValidation, 
   validate, 
   createBranch
@@ -35,7 +34,7 @@ router.post(
 router.put(
   '/:id', 
   authenticate, 
-  checkRole(ROLES.SUPER_ADMIN, ROLES.HOSPITAL_ADMIN), 
+  requirePermission('manage_branches'), 
   updateBranchValidation, 
   validate, 
   updateBranch
@@ -44,7 +43,7 @@ router.put(
 router.delete(
   '/:id', 
   authenticate, 
-  checkRole(ROLES.SUPER_ADMIN, ROLES.HOSPITAL_ADMIN), 
+  requirePermission('manage_branches'), 
   branchIdValidation, 
   validate, 
   deleteBranch

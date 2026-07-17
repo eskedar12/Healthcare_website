@@ -40,6 +40,20 @@ export const getPageContent = async (req, res, next) => {
   }
 }
 
+export const uploadContentImage = async (req, res, next) => {
+  try {
+    if (!req.file) {
+      return sendBadRequest(res, 'No image file provided')
+    }
+
+    // multer-storage-cloudinary puts the hosted https:// URL in req.file.path
+    const url = req.file.path
+    sendSuccess(res, 'Image uploaded successfully', { url })
+  } catch (error) {
+    next(error)
+  }
+}
+
 export const updatePageContent = async (req, res, next) => {
   try {
     const { page } = req.params

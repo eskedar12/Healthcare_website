@@ -4,7 +4,11 @@ import StatCard from '../components/ui/StatCard'
 import Button from '../components/ui/Button'
 import TrustedBySection from '../components/home/TrustedBySection'
 import useFetch from '../hooks/useFetch'
+import { useEditableSection } from '../hooks/useEditableSection'
+import EditableText from '../components/editable/EditableText'
+import EditableImage from '../components/editable/EditableImage'
 import aboutImage from '../assets/images/about.png'
+import { TEAM_MEMBERS } from '../data/doctors'
 
 const STATS = [
   { icon: '◷', value: '24/7', label: 'Working Hours' },
@@ -34,73 +38,63 @@ const DEFAULT_MISSION = {
     'To see Lebeza providing holistic mental health services as part of its quest to become the go-to center in the global mental health industry.',
 }
 
-const TEAM_MEMBERS = [
-  { 
-    id: 1, 
-    name: 'Dr. Alemtsehay Iyassu', 
-    role: 'Vice CO, Psychiatrist', 
-    image: null 
-  },
-  { 
-    id: 2, 
-    name: 'Dr. Elizabeth Berhanu', 
-    role: 'Medical Director, Psychiatrist', 
-    image: null 
-  },
-  { 
-    id: 3, 
-    name: 'Ashebr Adane', 
-    role: 'Operations and HR manager', 
-    image: null 
-  },
-  { 
-    id: 4, 
-    name: 'Dr. Amir Bekele', 
-    role: 'Consultant Psychiatrist', 
-    image: null 
-  },
-  { 
-    id: 5, 
-    name: 'Dr. Sara Tadesse', 
-    role: 'Clinical Psychologist', 
-    image: null 
-  },
-  { 
-    id: 6, 
-    name: 'Dr. Yonas Girma', 
-    role: 'Child Psychiatrist', 
-    image: null 
-  },
-  { 
-    id: 7, 
-    name: 'Dr. Hana Mulatu', 
-    role: 'Psychotherapist', 
-    image: null 
-  },
-  { 
-    id: 8, 
-    name: 'Dr. Elias Worku', 
-    role: 'Consultant Psychiatrist', 
-    image: null 
-  },
-  { 
-    id: 9, 
-    name: 'Dr. Bethlehem Assefa', 
-    role: 'Clinical Psychologist', 
-    image: null 
-  },
-]
+const DEFAULT_TEAM = {
+  title: 'Meet our team members',
+  subtitle: 'The team consists of a variety of professionals, such as event managers, youth counselors, and volunteers.',
+}
+
+const DEFAULT_CTA = {
+  title: 'Ready to take the first step toward peace of mind?',
+}
+
+// Merge a fetched object over defaults, but only take fetched values that are
+// non-empty strings/arrays. This stops the API returning "" or [] (instead of
+// simply omitting the key) from silently blanking out the fallback copy.
+const mergeDefined = (defaults, incoming) => {
+  if (!incoming) return { ...defaults }
+  const result = { ...defaults }
+  for (const key of Object.keys(defaults)) {
+    const val = incoming[key]
+    const isEmptyString = typeof val === 'string' && val.trim() === ''
+    const isEmptyArray = Array.isArray(val) && val.length === 0
+    if (val !== undefined && val !== null && !isEmptyString && !isEmptyArray) {
+      result[key] = val
+    }
+  }
+  return result
+}
 
 const AboutPage = () => {
   const { data } = useFetch('/content/about')
-  const header = { ...DEFAULT_HEADER, ...data?.data?.header }
-  const mission = {
-    ...DEFAULT_MISSION,
-    ...data?.data?.mission,
+
+  const fetchedHeader = mergeDefined(DEFAULT_HEADER, data?.data?.header)
+  const headerInitial = { ...fetchedHeader, image: data?.data?.header?.image || null }
+  const { value: header, updateField: updateHeaderField } = useEditableSection(
+    'about',
+    'header',
+    headerInitial
+  )
+
+  const missionInitial = {
+    ...mergeDefined(DEFAULT_MISSION, data?.data?.mission),
     ourValues:
       data?.data?.mission?.ourValues?.length === 3
         ? data.data.mission.ourValues
         : DEFAULT_MISSION.ourValues,
+  }
+  const { value: mission, updateField: updateMissionField, updateAll: updateMissionAll } =
+    useEditableSection('about', 'mission', missionInitial)
+
+  const teamInitial = mergeDefined(DEFAULT_TEAM, data?.data?.team)
+  const { value: team, updateField: updateTeamField } = useEditableSection('about', 'team', teamInitial)
+
+  const ctaInitial = mergeDefined(DEFAULT_CTA, data?.data?.cta)
+  const { value: cta, updateField: updateCtaField } = useEditableSection('about', 'cta', ctaInitial)
+
+  const updateValueAt = (index, text) => {
+    const next = [...mission.ourValues]
+    next[index] = text
+    updateMissionAll({ ...mission, ourValues: next })
   }
 
   return (
@@ -111,35 +105,47 @@ const AboutPage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             {/* Left side - Content */}
             <div>
-              <h1
+              <EditableText
+                as="h1"
+                value={header.title}
+                onChange={(v) => updateHeaderField('title', v)}
                 className="font-serif text-text-dark leading-tight max-w-2xl mb-6 text-balance"
                 style={{ fontSize: 'clamp(2.25rem, 4vw, 3.5rem)' }}
-              >
-                {header.title}
-              </h1>
-              
-              <h2
+              />
+
+              <EditableText
+                as="h2"
+                value={header.subtitle}
+                onChange={(v) => updateHeaderField('subtitle', v)}
                 className="font-serif text-text-dark leading-tight max-w-2xl mb-4 text-balance"
                 style={{ fontSize: 'clamp(1.5rem, 2.5vw, 2rem)' }}
-              >
-                {header.subtitle}
-              </h2>
-              
-              <p className="font-sans text-text-body text-base leading-relaxed max-w-3xl">
-                {header.bio1}
-              </p>
-              <p className="font-sans text-text-body text-base leading-relaxed max-w-3xl mt-4">
-                {header.bio2}
-              </p>
+              />
+
+              <EditableText
+                as="p"
+                value={header.bio1}
+                onChange={(v) => updateHeaderField('bio1', v)}
+                multiline
+                className="font-sans text-text-body text-base leading-relaxed max-w-3xl"
+              />
+              <EditableText
+                as="p"
+                value={header.bio2}
+                onChange={(v) => updateHeaderField('bio2', v)}
+                multiline
+                className="font-sans text-text-body text-base leading-relaxed max-w-3xl mt-4"
+              />
             </div>
 
             {/* Right side - Image (smaller) */}
             <div className="flex justify-center lg:justify-end">
-              <div className="w-full max-w-xs lg:max-w-sm">
-                <img 
-                  src={aboutImage} 
-                  alt="About Lebeza" 
-                  className="w-full h-auto rounded-2xl shadow-lg object-cover"
+              <div className="relative w-full max-w-xs lg:max-w-sm rounded-2xl shadow-lg overflow-hidden">
+                <EditableImage
+                  value={header.image}
+                  onChange={(v) => updateHeaderField('image', v)}
+                  fallbackSrc={aboutImage}
+                  alt="About Lebeza"
+                  className="w-full h-auto object-cover"
                 />
               </div>
             </div>
@@ -170,9 +176,13 @@ const AboutPage = () => {
               >
                 We exist
               </h2>
-              <p className="font-sans text-text-body text-base leading-relaxed flex-1">
-                {mission.weExist}
-              </p>
+              <EditableText
+                as="p"
+                value={mission.weExist}
+                onChange={(v) => updateMissionField('weExist', v)}
+                multiline
+                className="font-sans text-text-body text-base leading-relaxed flex-1"
+              />
             </div>
 
             {/* Our values - Middle column takes more space */}
@@ -186,9 +196,13 @@ const AboutPage = () => {
               <div className="space-y-4 flex-1">
                 {mission.ourValues.map((value, i) => (
                   <div key={i}>
-                    <p className="font-sans text-text-body text-sm leading-relaxed">
-                      {value}
-                    </p>
+                    <EditableText
+                      as="p"
+                      value={value}
+                      onChange={(v) => updateValueAt(i, v)}
+                      multiline
+                      className="font-sans text-text-body text-sm leading-relaxed"
+                    />
                   </div>
                 ))}
               </div>
@@ -202,9 +216,13 @@ const AboutPage = () => {
               >
                 We aim
               </h2>
-              <p className="font-sans text-text-body text-base leading-relaxed flex-1">
-                {mission.weAim}
-              </p>
+              <EditableText
+                as="p"
+                value={mission.weAim}
+                onChange={(v) => updateMissionField('weAim', v)}
+                multiline
+                className="font-sans text-text-body text-base leading-relaxed flex-1"
+              />
             </div>
           </div>
         </div>
@@ -214,26 +232,35 @@ const AboutPage = () => {
       <section className="bg-cream-dark py-20 lg:py-28">
         <div className="max-w-7xl mx-auto px-6 lg:px-10">
           <div className="text-center mb-14">
-            <h2
+            <EditableText
+              as="h2"
+              value={team.title}
+              onChange={(v) => updateTeamField('title', v)}
               className="font-serif text-text-dark leading-tight"
               style={{ fontSize: 'clamp(2rem, 3vw, 2.75rem)' }}
-            >
-              Meet our team members
-            </h2>
-            <p className="font-sans text-text-body text-base leading-relaxed max-w-2xl mx-auto mt-4">
-              The team consists of a variety of professionals, such as event managers, youth counselors, and volunteers.
-            </p>
+            />
+            <EditableText
+              as="p"
+              value={team.subtitle}
+              onChange={(v) => updateTeamField('subtitle', v)}
+              multiline
+              className="font-sans text-text-body text-base leading-relaxed max-w-2xl mx-auto mt-4"
+            />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
             {TEAM_MEMBERS.map((member) => (
-              <div key={member.id} className="bg-cream rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                <div className="aspect-square bg-cream-darker flex items-center justify-center">
+              <Link
+                to={`/doctors/${member.id}`}
+                key={member.id}
+                className="group bg-cream rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow block"
+              >
+                <div className="aspect-square bg-cream-darker flex items-center justify-center overflow-hidden">
                   {member.image ? (
-                    <img 
-                      src={member.image} 
-                      alt={member.name} 
-                      className="w-full h-full object-cover"
+                    <img
+                      src={member.image}
+                      alt={member.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-forest/10 to-forest/5 flex items-center justify-center">
@@ -242,10 +269,15 @@ const AboutPage = () => {
                   )}
                 </div>
                 <div className="p-6 text-center">
-                  <h3 className="font-serif text-lg text-text-dark font-semibold">{member.name}</h3>
+                  <h3 className="font-serif text-lg text-text-dark font-semibold group-hover:text-forest transition-colors">
+                    {member.name}
+                  </h3>
                   <p className="font-sans text-sm text-text-body">{member.role}</p>
+                  <span className="inline-block mt-2 text-xs font-sans text-forest opacity-0 group-hover:opacity-100 transition-opacity">
+                    View profile →
+                  </span>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
@@ -254,12 +286,14 @@ const AboutPage = () => {
       {/* CTA */}
       <section className="bg-cream-dark py-20 lg:py-24">
         <div className="max-w-7xl mx-auto px-6 lg:px-10 flex flex-col lg:flex-row items-center justify-between gap-8">
-          <h2
+          <EditableText
+            as="h2"
+            value={cta.title}
+            onChange={(v) => updateCtaField('title', v)}
+            multiline
             className="font-serif text-text-dark leading-tight max-w-lg text-balance"
             style={{ fontSize: 'clamp(1.75rem, 3vw, 2.5rem)' }}
-          >
-            Ready to take the first step toward peace of mind?
-          </h2>
+          />
           <div className="flex gap-4 flex-shrink-0">
             <Link to="/book">
               <Button variant="primary" size="lg">Book Here</Button>

@@ -2,6 +2,9 @@ import { Link } from 'react-router-dom'
 import Button from '../ui/Button'
 import heroImage from '../../assets/images/hero.jpg'
 import useFetch from '../../hooks/useFetch'
+import { useEditableSection } from '../../hooks/useEditableSection'
+import EditableText from '../editable/EditableText'
+import EditableImage from '../editable/EditableImage'
 
 const DEFAULT_TITLE = 'For your peace\nof mind.'
 const DEFAULT_DESCRIPTION =
@@ -11,8 +14,12 @@ const HeroSection = () => {
   const { data } = useFetch('/content/home')
   const hero = data?.data?.hero
 
-  const title = hero?.title || DEFAULT_TITLE
-  const description = hero?.description || DEFAULT_DESCRIPTION
+  const initial = {
+    title: hero?.title || DEFAULT_TITLE,
+    description: hero?.description || DEFAULT_DESCRIPTION,
+    image: hero?.image || null,
+  }
+  const { value, updateField } = useEditableSection('home', 'hero', initial)
 
   return (
     <section className="relative min-h-screen bg-cream flex items-center overflow-hidden">
@@ -21,21 +28,22 @@ const HeroSection = () => {
 
           {/* Left — Text */}
           <div className="flex flex-col justify-center py-16 lg:py-24 pt-20 lg:pt-32">
-            <h1
-              className="font-serif text-text-dark leading-tight mb-6 text-balance"
+            <EditableText
+              as="h1"
+              value={value.title}
+              onChange={(v) => updateField('title', v)}
+              multiline
+              className="font-serif text-text-dark leading-tight mb-6 text-balance whitespace-pre-line"
               style={{ fontSize: 'clamp(2.8rem, 5vw, 4.5rem)' }}
-            >
-              {title.split('\n').map((line, i) => (
-                <span key={i}>
-                  {line}
-                  {i < title.split('\n').length - 1 && <br />}
-                </span>
-              ))}
-            </h1>
+            />
 
-            <p className="font-sans text-text-body text-base lg:text-lg leading-relaxed max-w-md mb-10">
-              {description}
-            </p>
+            <EditableText
+              as="p"
+              value={value.description}
+              onChange={(v) => updateField('description', v)}
+              multiline
+              className="font-sans text-text-body text-base lg:text-lg leading-relaxed max-w-md mb-10"
+            />
 
             <div className="flex flex-wrap items-center gap-4">
               <Link to="/book">
@@ -53,10 +61,12 @@ const HeroSection = () => {
           </div>
 
           {/* Right — Image */}
-          <div className="relative h-[55vh] lg:h-screen flex items-stretch">
+          <div className="relative h-[55vh] lg:h-[80vh] flex items-stretch self-center">
             <div className="relative w-full lg:rounded-bl-[3rem] overflow-hidden">
-              <img
-                src={heroImage}
+              <EditableImage
+                value={value.image}
+                onChange={(v) => updateField('image', v)}
+                fallbackSrc={heroImage}
                 alt="Comfortable therapy room at Lebeza Psychiatry"
                 className="w-full h-full object-cover"
               />

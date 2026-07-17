@@ -17,14 +17,42 @@ export const registerValidation = [
     .notEmpty().withMessage('Password is required')
     .isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
   
+  // Free text now — the admin creating the account types the role name
+  // directly instead of picking from a fixed list.
   body('role')
-    .optional()
-    .isIn(['super_admin', 'hospital_admin', 'branch_manager', 'content_editor', 'reception_officer', 'marketing_officer'])
-    .withMessage('Invalid role'),
-  
+    .notEmpty().withMessage('Role is required')
+    .isLength({ min: 2, max: 100 }).withMessage('Role must be between 2 and 100 characters'),
+
   body('branch_id')
     .optional()
-    .isInt().withMessage('Branch ID must be an integer')
+    .isInt().withMessage('Branch ID must be an integer'),
+
+  // Permissions are now required and functional, not an optional extra —
+  // this is what actually controls what the account can do.
+  body('permissions')
+    .isArray({ min: 1 }).withMessage('Select at least one permission')
+    .custom((value) => {
+      const allowed = new Set([
+        'manage_doctors',
+        'view_doctors',
+        'manage_services',
+        'view_services',
+        'manage_branches',
+        'view_branches',
+        'manage_appointments',
+        'view_appointments',
+        'manage_content',
+        'view_content',
+        'manage_staff',
+        'view_contact_messages',
+        'view_dashboard',
+        'view_notifications'
+      ])
+      if (!value.every((p) => allowed.has(p))) {
+        throw new Error('Permissions contain an invalid value')
+      }
+      return true
+    })
 ];
 
 export const loginValidation = [

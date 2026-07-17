@@ -1,0 +1,124 @@
+# Backend — Documentation
+
+Node.js / Express API, using Sequelize as the ORM against a MySQL database. Serves both the public website and the admin panel.
+
+## Tech stack
+- **Runtime:** Node.js, Express
+- **Database:** MySQL, via Sequelize
+- **Auth:** JWT (access + refresh tokens)
+- **Security middleware:** `helmet`, `cors`
+- **Email:** `nodemailer` (Gmail SMTP) for contact-form notifications
+- **Validation:** `express-validator`-style validation chains per route
+
+## Environment variables (`.env`)
+| Variable | Purpose | Default |
+|---|---|---|
+| `PORT` | Port the API listens on | `5000` |
+| `DATABASE_URL` | Full connection string (if set, used instead of the individual DB_* vars) | — |
+| `DB_NAME` | MySQL database name | `healthcare` |
+| `DB_USER` | MySQL user | `root` |
+| `DB_PASSWORD` | MySQL password | `root` |
+| `DB_HOST` | MySQL host | `localhost` |
+| `DB_PORT` | MySQL port | `3306` |
+| `MYSQL_SSL` | Set `true` to require SSL in production | — |
+| `JWT_SECRET` | Secret used to sign access/refresh tokens — **must** be set in any real deployment | insecure dev fallback |
+| `JWT_EXPIRES_IN` | Access token lifetime | `7d` |
+| `JWT_REFRESH_EXPIRES_IN` | Refresh token lifetime | `30d` |
+| `EMAIL_USER` / `EMAIL_PASS` | Gmail address + App Password used to send contact-form notification emails | — |
+| `NODE_ENV` | `development` enables verbose SQL logging | — |
+
+## Folder structure
+```
+src/
+├── config/database.js       Sequelize connection setup
+├── models/                  Sequelize models (one file per table) + index.js (associations)
+├── controllers/              Request handlers — one per resource
+├── services/                 Business logic used by controllers (DB queries, password hashing, token generation, email sending)
+├── routes/                   Express routers — one per resource, combined in routes/index.js
+├── middleware/                auth.js (JWT + permission checks), validate.js, errorHandler.js, roleCheck.js
+├── validations/               express-validator rule sets, one per resource
+├── utils/                     helpers: token generation, password hashing, permission constants, response formatting
+└── seeders/                   one-off scripts to create the first super admin and legacy role-based test accounts
+```
+
+## Data model (key tables)
+- **User** — staff/admin accounts. Fields include `full_name`, `email`, `password` (hashed), `role` (free-text label, no longer a fixed enum), `branch_id`, `is_active`, `permissions` (nullable JSON array — see Permissions section below).
+- **Branch** — clinic locations.
+- **Doctor** — linked to one or more branches.
+- **Service** — services offered, shown on the public site.
+- **Appointment** — bookings made through the public site or created by staff.
+- **ContactMessage** — submissions from the public "Contact us" form.
+- **Content** — freeform JSON content per public-site page (home/about/contact/services/projects), edited via the admin Web Editor.
+- **Patient, Project, Partner** — supporting tables for the public site's content.
+
+## Authentication flow
+1. `POST /api/auth/login` — validates credentials, returns `{ user, token, refreshToken }`. `token` is a short-lived JWT carrying `id`, `email`, `role`, `branch_id`. `user` includes the account's **effective permissions** (see below).
+2. Every protected request sends `Authorization: Bearer <token>`. The `authenticate` middleware verifies the JWT, then **re-loads the user from the database on every request** (rather than trusting the token's stale role/permissions) — so a permission change or deactivation by an admin takes effect on the user's very next request, without waiting for their token to expire.
+3. `POST /api/auth/refresh-token` — exchanges a valid refresh token for a new access token.
+4. `GET /api/auth/me` — returns the current user's profile (used by the admin frontend on page load/refresh to restore the session).
+
+## Permissions system
+Two independent things live on every `User` row:
+- **`role`** — a free-text label (e.g. "Reception", "Nurse Coordinator"). Purely descriptive today; it no longer restricts what an account can do by itself.
+- **`permissions`** — a nullable JSON array of permission strings that determines actual access.
+
+Permission strings in use:
+```
+manage_doctors      view_doctors
+manage_services      view_services
+manage_branches      view_branches
+manage_appointments  view_appointments
+manage_content       view_content
+manage_staff
+view_contact_messages
+view_dashboard
+view_notifications
+```
+"Manage" implies full CRUD; "view" is read-only. Staff management and Contact Messages only have a single tier — there's no separate "view-only staff" or "manage contact messages" concept.
+
+**`User.getRolePermissions(role)`** (in `models/User.js`) — a hardcoded lookup table of default permissions for the handful of legacy fixed role names (`hospital_admin`, `branch_manager`, `content_editor`, `reception_officer`, `marketing_officer`). This exists purely for backward compatibility with accounts created before the `permissions` column existed.
+
+**`User.getEffectivePermissions(user)`** — the single source of truth for what a user can actually do:
+- `super_admin` → everything, unconditionally.
+- Non-empty custom `permissions` array set → **use exactly that array** (authoritative — does not also fall back to role defaults).
+- Otherwise → fall back to `getRolePermissions(user.role)`.
+
+This function is called in two places: building the login/`getMe` response, and inside `authenticate` middleware when populating `req.user.permissions` for every request.
+
+## Authorization middleware (`middleware/auth.js`)
+- **`authenticate`** — verifies JWT, loads user, rejects if inactive, attaches `req.user` (including effective permissions).
+- **`requirePermission(...perms)`** — route guard; passes if `req.user` has *any one* of the listed permissions (OR semantics), or is `super_admin`. Otherwise responds `403`.
+- **`authorize`/`checkRole` (`middleware/roleCheck.js`)** — an older, coarser guard that checks `req.user.role` against a fixed allow-list (`SUPER_ADMIN`, `HOSPITAL_ADMIN`, etc.). Still used on a few sensitive endpoints (creating/deleting staff accounts) where only the two "admin" roles should ever be allowed, regardless of custom permissions.
+- **`restrictByBranch`** — attaches a branch filter to the request for branch-scoped managers (not fully wired into every controller yet).
+
+## API routes overview
+All routes are mounted under `/api`.
+
+| Resource | Base path | Public routes | Protected routes (permission required) |
+|---|---|---|---|
+| Auth | `/auth` | `POST /login`, `POST /refresh-token` | `GET /me`, `POST /logout`; `POST /register` (admin roles only) |
+| Users/Staff | `/users` | — | Full CRUD + activate/deactivate (admin roles only via `checkRole`) |
+| Appointments | `/appointments` | `POST /` (public booking), `GET /reference/:ref` | `GET /`, `GET /:id`, `GET /calendar`, `GET /stats`, `GET /export/pdf` (`view_appointments` **or** `manage_appointments`); `PUT /:id`, `PATCH /:id/status`, `DELETE /:id` (`manage_appointments` only) |
+| Branches | `/branches` | `GET /`, `GET /:id` | `POST /`, `PUT /:id`, `DELETE /:id` (`manage_branches`) |
+| Doctors | `/doctors` | `GET /`, `GET /:id` | `POST /`, `PUT /:id`, `DELETE /:id` (`manage_doctors`) |
+| Services | `/services` | `GET /`, `GET /:id` | `POST /`, `PUT /:id`, `DELETE /:id` (`manage_services`) |
+| Content | `/content` | `GET /:page` (feeds the public site + admin live preview) | `POST /:page` (`manage_content`) |
+| Contact/Inquiries | `/inquiries` | `POST /` (public contact form) | `GET /`, `PUT /:id` (`view_contact_messages`) |
+| Dashboard | `/dashboard` | — | `GET /stats` (any authenticated user) |
+| Departments | `/departments` | `GET /` (static list) | — |
+| Health check | `/health` | `GET /` | — |
+
+Doctor/Service/Branch listings are intentionally public (unauthenticated) because the public website needs them too — the `view_x` permissions only gate what shows in the *admin* UI, not the public API.
+
+Appointments are the one resource where reads are also gated server-side, since booking data is sensitive (patient names/contact info) — see the "Known bugs already fixed" note below.
+
+## Known bugs already found & fixed in this codebase
+1. **Login response wasn't using effective permissions** — `authService.js`'s `publicUser()` was calling `getRolePermissions(json.role)` instead of `getEffectivePermissions(user)`, discarding any custom permissions on login.
+2. **Appointments router blanket-required `manage_appointments`** on every route including reads — meaning a view-only account got 403'd just trying to list appointments. Fixed by requiring `view_appointments` OR `manage_appointments` on the GET routes, and keeping `manage_appointments` only on the write routes (PUT/PATCH/DELETE).
+
+## Running locally
+1. Create a MySQL database matching `DB_NAME`.
+2. Copy the env vars above into a `.env` file at the project root.
+3. `npm install`
+4. Run the seeders (`src/seeders/initialAdmin.js`) to create the first super admin account.
+5. Start the server (entry point should point at `src/` — confirm your `package.json`'s `main`/`start` script, since this project's `server.js` currently has some stale references left over from an earlier CommonJS version and may need reconciling with the ESM `config/database.js` setup actually in use).

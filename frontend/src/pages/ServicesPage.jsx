@@ -3,15 +3,9 @@ import SectionLabel from '../components/ui/SectionLabel'
 import ServiceCard from '../components/services/ServiceCard'
 import LoadingSpinner from '../components/ui/LoadingSpinner'
 import useFetch from '../hooks/useFetch'
-
-const FALLBACK_SERVICES = [
-  { id: 1, name: 'Psychiatric Consultation', description: 'Comprehensive evaluation and diagnosis by experienced psychiatrists.', icon: '🧠', slug: 'psychiatric-consultation' },
-  { id: 2, name: 'Clinical Psychology', description: 'Psychological assessment and evidence-based therapeutic interventions.', icon: '💬', slug: 'clinical-psychology' },
-  { id: 3, name: 'Psychotherapy', description: 'Individual and group therapy using proven therapeutic approaches.', icon: '🌿', slug: 'psychotherapy' },
-  { id: 4, name: 'Child & Adolescent Care', description: 'Specialized mental health support tailored for young patients.', icon: '🌱', slug: 'child-adolescent-care' },
-  { id: 5, name: 'Community Mental Health', description: 'Outreach programs and community-level mental health promotion.', icon: '🤝', slug: 'community-mental-health' },
-  { id: 6, name: 'Crisis Intervention', description: 'Immediate professional support for acute mental health crises.', icon: '⚡', slug: 'crisis-intervention' },
-]
+import { useEditableSection } from '../hooks/useEditableSection'
+import EditableText from '../components/editable/EditableText'
+import SERVICES from '../data/services'
 
 const DEFAULT_HEADER = {
   label: 'What we offer',
@@ -23,22 +17,39 @@ const DEFAULT_HEADER = {
 const ServicesPage = () => {
   const { data, loading } = useFetch('/services')
   const { data: contentData } = useFetch('/content/services')
-  const header = { ...DEFAULT_HEADER, ...contentData?.data?.header }
-  const services = data?.services || FALLBACK_SERVICES
+  const headerInitial = { ...DEFAULT_HEADER, ...contentData?.data?.header }
+  const { value: header, updateField: updateHeaderField } = useEditableSection(
+    'services',
+    'header',
+    headerInitial
+  )
+  const services = data?.services?.length ? data.services : SERVICES
   const [layout] = useState('grid')
 
   return (
     <div className="max-w-7xl mx-auto px-6 lg:px-10 py-16 lg:py-24">
-      <SectionLabel className="mb-4">{header.label}</SectionLabel>
-      <h1
-        className="font-serif text-text-dark leading-tight mb-6 max-w-2xl"
-        style={{ fontSize: 'clamp(2.25rem, 4vw, 3.5rem)' }}
-      >
-        {header.title}
-      </h1>
-      <p className="font-sans text-text-body text-base leading-relaxed max-w-xl mb-14">
-        {header.description}
-      </p>
+      <div className="text-center max-w-2xl mx-auto mb-14">
+        <EditableText
+          as="p"
+          value={header.label}
+          onChange={(v) => updateHeaderField('label', v)}
+          className="section-label mb-3 text-text-muted"
+        />
+        <EditableText
+          as="h1"
+          value={header.title}
+          onChange={(v) => updateHeaderField('title', v)}
+          className="font-serif text-text-dark leading-tight mb-6"
+          style={{ fontSize: 'clamp(2.25rem, 4vw, 3.5rem)' }}
+        />
+        <EditableText
+          as="p"
+          value={header.description}
+          onChange={(v) => updateHeaderField('description', v)}
+          multiline
+          className="font-sans text-text-body text-base leading-relaxed"
+        />
+      </div>
 
       {loading ? (
         <div className="py-24 flex justify-center">

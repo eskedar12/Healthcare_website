@@ -1,6 +1,10 @@
+import useCountUp from '../../hooks/useCountUp'
+
 const StatCard = ({ icon, value, label, light = false }) => {
+  const { ref, display } = useCountUp(value)
+
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3" ref={ref}>
       {icon && (
         <span className={`text-xl ${light ? 'text-cream/40' : 'text-text-muted'}`}>
           {icon}
@@ -12,7 +16,7 @@ const StatCard = ({ icon, value, label, light = false }) => {
         }`}
         style={{ fontSize: '3rem' }}
       >
-        {value}
+        {display}
       </span>
       <span
         className={`section-label ${

@@ -11,6 +11,7 @@ import PatientModel from './Patient.js'
 import ProjectModel from './Project.js'
 import PartnerModel from './Partner.js'
 import ContactMessageModel from './ContactMessage.js'
+import PostModel from './Post.js'
 
 // Initialize models with sequelize
 const User = UserModel(sequelize)
@@ -23,6 +24,7 @@ const Patient = PatientModel(sequelize)
 const Project = ProjectModel(sequelize)
 const Partner = PartnerModel(sequelize)
 const ContactMessage = ContactMessageModel(sequelize)
+const Post = PostModel(sequelize)
 
 // Set up associations
 User.associate?.({ Appointment, Content, Branch })
@@ -43,7 +45,8 @@ export {
   Patient,
   Project,
   Partner,
-  ContactMessage
+  ContactMessage,
+  Post
 }
 
 export default {
@@ -57,5 +60,6 @@ export default {
   Patient,
   Project,
   Partner,
-  ContactMessage
+  ContactMessage,
+  Post
 }

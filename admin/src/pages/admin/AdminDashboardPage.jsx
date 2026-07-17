@@ -3,32 +3,43 @@ import { FiCalendar, FiUsers, FiMapPin } from 'react-icons/fi'
 import AdminStats from '../../components/admin/AdminStats'
 import useAdmin from '../../hooks/useAdmin'
 import api from '../../services/api'
+import { canViewAppointments, canViewDoctors, canViewBranches } from '../../utils/permissions'
 
 const AdminDashboardPage = () => {
   const { user } = useAdmin()
   const [stats, setStats] = useState([])
   const [todayAppointments, setTodayAppointments] = useState([])
+  const [canSeeAppointments, setCanSeeAppointments] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
   useEffect(() => {
     fetchDashboardData()
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user])
 
   const fetchDashboardData = async () => {
     setLoading(true)
     setError(null)
+
+    // Only request the resources this user is actually allowed to see —
+    // otherwise a staff member without a permission (e.g. no
+    // manage_appointments) gets a 403 that blows up the whole dashboard.
+    const showAppointments = canViewAppointments(user)
+    const showDoctors = canViewDoctors(user)
+    const showBranches = canViewBranches(user)
+    setCanSeeAppointments(showAppointments)
+
     try {
-      // Fetch real data from the API instead of mock numbers
-      const [appointmentsRes, doctorsRes, branchesRes] = await Promise.all([
-        api.get('/appointments'),
-        api.get('/doctors'),
-        api.get('/branches'),
+      const [appointmentsRes, doctorsRes, branchesRes] = await Promise.allSettled([
+        showAppointments ? api.get('/appointments') : Promise.resolve({ data: [] }),
+        showDoctors ? api.get('/doctors') : Promise.resolve({ data: [] }),
+        showBranches ? api.get('/branches') : Promise.resolve({ data: [] }),
       ])
 
-      const allAppointments = appointmentsRes.data || []
-      const doctors = doctorsRes.data || []
-      const branches = branchesRes.data || []
+      const allAppointments = appointmentsRes.status === 'fulfilled' ? (appointmentsRes.value.data || []) : []
+      const doctors = doctorsRes.status === 'fulfilled' ? (doctorsRes.value.data || []) : []
+      const branches = branchesRes.status === 'fulfilled' ? (branchesRes.value.data || []) : []
 
       // Calculate today's appointments
       const today = new Date().toISOString().split('T')[0]
@@ -40,33 +51,38 @@ const AdminDashboardPage = () => {
         allAppointments.map((apt) => (apt.phone || apt.patient_name || '').toLowerCase().trim())
       )
 
-      // Calculate stats from real data
-      const statsData = [
-        {
+      // Calculate stats from whichever data this user could load
+      const statsData = []
+      if (showAppointments) {
+        statsData.push({
           title: 'Appointments Today',
           value: todayApps.length,
           icon: FiCalendar,
           color: 'text-blue-500 bg-blue-50'
-        },
-        {
+        })
+        statsData.push({
           title: 'Active Patients',
           value: uniquePatients.size,
           icon: FiUsers,
           color: 'text-green-500 bg-green-50'
-        },
-        {
+        })
+      }
+      if (showDoctors) {
+        statsData.push({
           title: 'Clinical Staff',
           value: doctors.length,
           icon: FiUsers,
           color: 'text-purple-500 bg-purple-50'
-        },
-        {
+        })
+      }
+      if (showBranches) {
+        statsData.push({
           title: 'Branches',
           value: branches.length,
           icon: FiMapPin,
           color: 'text-orange-500 bg-orange-50'
-        },
-      ]
+        })
+      }
 
       setStats(statsData)
     } catch (err) {
@@ -104,7 +120,8 @@ const AdminDashboardPage = () => {
         ))}
       </div>
 
-      {/* Today's Schedule */}
+      {/* Today's Schedule — only shown to staff with the manage_appointments permission */}
+      {canSeeAppointments && (
       <div className="bg-white rounded-xl shadow-sm p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-serif text-lg text-text-dark">Today's Schedule</h2>
@@ -148,6 +165,7 @@ const AdminDashboardPage = () => {
           </div>
         )}
       </div>
+      )}
 
       {/* Back to site */}
       <div className="mt-4">

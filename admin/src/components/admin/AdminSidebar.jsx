@@ -7,24 +7,40 @@ import {
   FiMapPin, 
   FiEdit3,
   FiSettings,
-  FiLogOut
+  FiLogOut,
+  FiMail,
+  FiUserPlus,
+  FiFolder,
+  FiBookOpen
 } from 'react-icons/fi'
 import { useAdmin } from '../../hooks/useAdmin'
-import { canAccessContent } from '../../utils/permissions'
+import {
+  canAccessContent,
+  canManageStaff,
+  canViewContactMessages,
+  canViewAppointments,
+  canViewDoctors,
+  canViewServices,
+  canViewBranches,
+} from '../../utils/permissions'
 
 const SIDEBAR_LINKS = [
   { to: '/admin/dashboard', label: 'Dashboard', icon: FiHome },
   { to: '/admin/content', label: 'Web Editor', icon: FiEdit3, requires: canAccessContent },
-  { to: '/admin/appointments', label: 'Appointments', icon: FiCalendar },
-  { to: '/admin/doctors', label: 'Doctors', icon: FiUsers },
-  { to: '/admin/services', label: 'Services', icon: FiGrid },
-  { to: '/admin/branches', label: 'Branches', icon: FiMapPin },
+  { to: '/admin/appointments', label: 'Appointments', icon: FiCalendar, requires: canViewAppointments },
+  { to: '/admin/doctors', label: 'Doctors', icon: FiUsers, requires: canViewDoctors },
+  { to: '/admin/services', label: 'Services', icon: FiGrid, requires: canViewServices },
+  { to: '/admin/projects', label: 'Projects', icon: FiFolder, requires: canAccessContent },
+  { to: '/admin/blog', label: 'Blog', icon: FiBookOpen, requires: canAccessContent },
+  { to: '/admin/branches', label: 'Branches', icon: FiMapPin, requires: canViewBranches },
+  { to: '/admin/staff', label: 'Staff', icon: FiUserPlus, requires: canManageStaff },
+  { to: '/admin/contact', label: 'Contact', icon: FiMail, requires: canViewContactMessages },
 ]
 
 const AdminSidebar = () => {
   const { logout, user } = useAdmin()
   const navigate = useNavigate()
-  const links = SIDEBAR_LINKS.filter((link) => !link.requires || link.requires(user?.role))
+  const links = SIDEBAR_LINKS.filter((link) => !link.requires || link.requires(user))
 
   const handleLogout = async () => {
     await logout()

@@ -5,11 +5,17 @@ import SectionLabel from '../ui/SectionLabel'
 const ServiceDetail = ({ service }) => {
   if (!service) return null
 
-  const { name, description, icon, longDescription, highlights = [] } = service
+  const { name, description, icon, image, longDescription, highlights = [] } = service
 
   return (
     <div className="max-w-4xl mx-auto px-6 lg:px-10 py-16 lg:py-24">
       <SectionLabel className="mb-4">Our services</SectionLabel>
+
+      {image && (
+        <div className="rounded-2xl overflow-hidden aspect-[21/9] mb-10 bg-cream-dark">
+          <img src={image} alt={name} className="w-full h-full object-cover" />
+        </div>
+      )}
 
       <div className="flex items-start gap-5 mb-8">
         {icon && <span className="text-4xl">{icon}</span>}

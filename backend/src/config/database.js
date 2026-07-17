@@ -3,19 +3,14 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
-// Render (and most managed Postgres hosts) provide one connection string
-// via DATABASE_URL instead of separate host/user/password vars. Locally,
-// DATABASE_URL is usually unset, so we fall back to the individual
-// DB_* vars from .env.
+// Using MySQL connection
 const useConnectionString = !!process.env.DATABASE_URL
 
-// Render's internal Postgres connection doesn't require SSL, but its
-// external connection string does. NODE_ENV=production is the signal
-// we use to turn SSL on; set PGSSL=false to force it off if needed.
-const needsSSL = process.env.NODE_ENV === 'production' && process.env.PGSSL !== 'false'
+// SSL not typically needed for local MySQL
+const needsSSL = process.env.NODE_ENV === 'production' && process.env.MYSQL_SSL === 'true'
 
 const commonOptions = {
-  dialect: 'postgres',
+ dialect: 'postgres',  // <-- CHANGED from 'postgres' to 'mysql'
   logging: process.env.NODE_ENV === 'development' ? console.log : false,
   pool: {
     max: 10,
@@ -38,11 +33,11 @@ const sequelize = useConnectionString
   ? new Sequelize(process.env.DATABASE_URL, commonOptions)
   : new Sequelize(
       process.env.DB_NAME || 'healthcare',
-      process.env.DB_USER || 'postgres',
-      process.env.DB_PASSWORD || '',
+      process.env.DB_USER || 'root',      // <-- CHANGED from 'postgres' to 'root'
+      process.env.DB_PASSWORD || 'root',  // <-- CHANGED from '' to 'root'
       {
         host: process.env.DB_HOST || 'localhost',
-        port: process.env.DB_PORT || 5432,
+        port: process.env.DB_PORT || 3306, // <-- CHANGED from 5432 to 3306
         ...commonOptions
       }
     )

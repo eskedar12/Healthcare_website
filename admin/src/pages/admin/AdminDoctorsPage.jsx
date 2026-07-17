@@ -3,14 +3,14 @@ import { FiPlus, FiEdit, FiTrash2, FiEye } from 'react-icons/fi'
 import DoctorForm from '../../components/admin/DoctorForm'
 import ConfirmDialog from '../../components/admin/ConfirmDialog'
 import useToast from '../../hooks/useToast'
-import api from '../../services/api'
+import api, { API_ORIGIN } from '../../services/api'
 import { useAdmin } from '../../hooks/useAdmin'
-import { canEditManagement } from '../../utils/permissions'
+import { canManageDoctors } from '../../utils/permissions'
 
 const AdminDoctorsPage = () => {
   const toast = useToast()
   const { user } = useAdmin()
-  const canEdit = canEditManagement(user?.role)
+  const canEdit = canManageDoctors(user)
   const [doctors, setDoctors] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -91,6 +91,12 @@ const AdminDoctorsPage = () => {
     return name.split(' ').slice(0, 2).map(n => n[0]).join('')
   }
 
+  const resolveImageSrc = (value) => {
+    if (!value) return null
+    if (/^https?:\/\//i.test(value) || value.startsWith('data:')) return value
+    return `${API_ORIGIN}${value}`
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -131,9 +137,24 @@ const AdminDoctorsPage = () => {
               <div className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-full bg-forest/10 flex items-center justify-center font-serif text-forest text-lg font-semibold">
-                      {getInitials(doctor.name)}
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => canEdit && handleEdit(doctor)}
+                      title={canEdit ? 'Click to edit photo and details' : doctor.name}
+                      className={`w-14 h-14 rounded-full bg-forest/10 flex items-center justify-center font-serif text-forest text-lg font-semibold overflow-hidden flex-shrink-0 ${
+                        canEdit ? 'cursor-pointer hover:ring-2 hover:ring-forest/40 transition-all' : 'cursor-default'
+                      }`}
+                    >
+                      {resolveImageSrc(doctor.image) ? (
+                        <img
+                          src={resolveImageSrc(doctor.image)}
+                          alt={doctor.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        getInitials(doctor.name)
+                      )}
+                    </button>
                     <div>
                       <h3 className="font-serif text-lg text-text-dark">{doctor.name}</h3>
                       <p className="font-sans text-sm text-text-body">{doctor.title}</p>

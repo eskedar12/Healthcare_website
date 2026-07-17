@@ -34,6 +34,10 @@ export default (sequelize) => {
       type: DataTypes.STRING(50),
       allowNull: false
     },
+    image: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
     bio: {
       type: DataTypes.TEXT,
       allowNull: true

@@ -5,7 +5,10 @@ import Textarea from '../components/ui/Textarea'
 import Button from '../components/ui/Button'
 import useInquiryForm from '../hooks/useInquiryForm'
 import useFetch from '../hooks/useFetch'
+import { useEditableSection } from '../hooks/useEditableSection'
+import EditableText from '../components/editable/EditableText'
 import { CLINIC_INFO, CONTACT_SUBJECTS } from '../utils/constants'
+import ChatBot from '../components/chatbot/ChatBot'
 
 const DEFAULT_HEADER = {
   title: "We're here to help.",
@@ -16,7 +19,12 @@ const DEFAULT_HEADER = {
 const ContactPage = () => {
   const { form, errors, loading, submitted, handleChange, handleSubmit } = useInquiryForm()
   const { data } = useFetch('/content/contact')
-  const header = { ...DEFAULT_HEADER, ...data?.data?.header }
+  const headerInitial = { ...DEFAULT_HEADER, ...data?.data?.header }
+  const { value: header, updateField: updateHeaderField } = useEditableSection(
+    'contact',
+    'header',
+    headerInitial
+  )
 
   return (
     <div className="max-w-7xl mx-auto px-6 lg:px-10 py-16 lg:py-24">
@@ -25,15 +33,20 @@ const ContactPage = () => {
         {/* Info */}
         <div>
           <SectionLabel className="mb-4">Get in touch</SectionLabel>
-          <h1
+          <EditableText
+            as="h1"
+            value={header.title}
+            onChange={(v) => updateHeaderField('title', v)}
             className="font-serif text-text-dark leading-tight mb-6 text-balance"
             style={{ fontSize: 'clamp(2.25rem, 4vw, 3.5rem)' }}
-          >
-            {header.title}
-          </h1>
-          <p className="font-sans text-text-body text-base leading-relaxed max-w-md mb-10">
-            {header.description}
-          </p>
+          />
+          <EditableText
+            as="p"
+            value={header.description}
+            onChange={(v) => updateHeaderField('description', v)}
+            multiline
+            className="font-sans text-text-body text-base leading-relaxed max-w-md mb-10"
+          />
 
           <div className="space-y-6">
             <div>
@@ -105,6 +118,8 @@ const ContactPage = () => {
           )}
         </div>
       </div>
+
+      <ChatBot />
     </div>
   )
 }

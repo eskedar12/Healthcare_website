@@ -30,7 +30,14 @@ export const errorHandler = (err, req, res, next) => {
       timestamp: new Date().toISOString()
     });
   }
-
+// Multer upload error (bad file type, too large, etc.)
+if (err.name === 'MulterError' || /only jpg, png, webp, or gif/i.test(err.message || '')) {
+  return res.status(400).json({
+    success: false,
+    message: err.code === 'LIMIT_FILE_SIZE' ? 'Image must be 5MB or smaller' : err.message,
+    timestamp: new Date().toISOString()
+  });
+}
   // JWT error
   if (err.name === 'JsonWebTokenError') {
     return res.status(401).json({

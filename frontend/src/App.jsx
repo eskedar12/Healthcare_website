@@ -8,6 +8,8 @@ import AboutPage from './pages/AboutPage'
 import DoctorsPage from './pages/DoctorsPage'
 import DoctorDetailPage from './pages/DoctorDetailPage'
 import ProjectsPage from './pages/ProjectsPage'
+import BlogPage from './pages/BlogPage'
+import BlogDetailPage from './pages/BlogDetailPage'
 import ContactPage from './pages/ContactPage'
 import BookingPage from './pages/BookingPage'
 import NotFoundPage from './pages/NotFoundPage'
@@ -23,6 +25,8 @@ function App() {
         <Route path="/doctors" element={<DoctorsPage />} />
         <Route path="/doctors/:id" element={<DoctorDetailPage />} />
         <Route path="/projects" element={<ProjectsPage />} />
+        <Route path="/blog" element={<BlogPage />} />
+        <Route path="/blog/:slug" element={<BlogDetailPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/book" element={<BookingPage />} />
         <Route path="*" element={<NotFoundPage />} />

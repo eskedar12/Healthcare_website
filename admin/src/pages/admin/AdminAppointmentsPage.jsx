@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { FiFilter, FiPlus, FiX, FiCalendar, FiUser, FiMapPin } from 'react-icons/fi'
+import { FiFilter, FiPlus, FiX, FiCalendar, FiUser, FiMapPin, FiDownload } from 'react-icons/fi'
 import useToast from '../../hooks/useToast'
 import api from '../../services/api'
 import { useAdmin } from '../../hooks/useAdmin'
@@ -29,7 +29,7 @@ const convertTo24Hour = (timeStr) => {
 const AdminAppointmentsPage = () => {
   const toast = useToast()
   const { user } = useAdmin()
-  const canEdit = canEditAppointments(user?.role)
+  const canEdit = canEditAppointments(user)
   const [appointments, setAppointments] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -239,18 +239,44 @@ const AdminAppointmentsPage = () => {
     return count
   }
 
+  const handleExportPDF = async () => {
+    try {
+      const response = await api.get('/appointments/export/pdf', {
+        responseType: 'blob'
+      })
+      const url = window.URL.createObjectURL(new Blob([response.data]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', 'appointments.pdf')
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      toast.success('PDF exported successfully')
+    } catch (err) {
+      toast.error('Failed to export PDF: ' + err.message)
+    }
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-serif text-2xl text-text-dark">Appointments</h1>
-        {canEdit && (
+        <div className="flex items-center gap-3">
           <button 
-            onClick={() => setShowBookingForm(true)}
-            className="btn-primary flex items-center gap-2"
+            onClick={handleExportPDF}
+            className="btn-outline flex items-center gap-2"
           >
-            <FiPlus /> Book Only
+            <FiDownload /> Export PDF
           </button>
-        )}
+          {canEdit && (
+            <button 
+              onClick={() => setShowBookingForm(true)}
+              className="btn-primary flex items-center gap-2"
+            >
+              <FiPlus /> Book Only
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Filters */}

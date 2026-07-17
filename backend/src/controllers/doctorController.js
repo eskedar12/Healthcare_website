@@ -1,6 +1,19 @@
 import { Doctor } from '../models/index.js'
 import { sendSuccess, sendCreated, sendNotFound, sendBadRequest } from '../utils/response.js'
 
+export const uploadDoctorImage = async (req, res, next) => {
+  try {
+    if (!req.file) {
+      return sendBadRequest(res, 'No image file provided')
+    }
+
+    const url = `/uploads/content/${req.file.filename}`
+    sendSuccess(res, 'Image uploaded successfully', { url })
+  } catch (error) {
+    next(error)
+  }
+}
+
 export const getAllDoctors = async (req, res, next) => {
   try {
     const doctors = await Doctor.findAll({
@@ -29,7 +42,7 @@ export const getDoctorById = async (req, res, next) => {
 
 export const createDoctor = async (req, res, next) => {
   try {
-    const { name, title, specialty, department, email, phone, bio, education, languages, branches, is_active } = req.body
+    const { name, title, specialty, department, email, phone, image, bio, education, languages, branches, is_active } = req.body
 
     // Validate required fields
     if (!name || !title || !specialty || !email || !phone) {
@@ -49,6 +62,7 @@ export const createDoctor = async (req, res, next) => {
       department: department || 'Psychiatry',
       email,
       phone,
+      image,
       bio,
       education,
       languages,
@@ -65,7 +79,7 @@ export const createDoctor = async (req, res, next) => {
 export const updateDoctor = async (req, res, next) => {
   try {
     const { id } = req.params
-    const { name, title, specialty, department, email, phone, bio, education, languages, branches, is_active } = req.body
+    const { name, title, specialty, department, email, phone, image, bio, education, languages, branches, is_active } = req.body
 
     const doctor = await Doctor.findByPk(id)
     if (!doctor) {
@@ -87,6 +101,7 @@ export const updateDoctor = async (req, res, next) => {
       department: department !== undefined ? department : doctor.department,
       email: email || doctor.email,
       phone: phone || doctor.phone,
+      image: image !== undefined ? image : doctor.image,
       bio: bio !== undefined ? bio : doctor.bio,
       education: education !== undefined ? education : doctor.education,
       languages: languages !== undefined ? languages : doctor.languages,

@@ -6,6 +6,8 @@ import appointmentRoutes from './appointmentRoutes.js';
 import branchRoutes from './branchRoutes.js';
 import doctorRoutes from './doctorRoutes.js';
 import serviceRoutes from './serviceRoutes.js';
+import projectRoutes from './projectRoutes.js';
+import postRoutes from './postRoutes.js';
 import contentRoutes from './contentRoutes.js';
 import dashboardRoutes from './dashboardRoutes.js';
 import inquiryRoutes from './inquiryRoutes.js';
@@ -40,6 +42,8 @@ router.use('/appointments', appointmentRoutes);
 router.use('/branches', branchRoutes);
 router.use('/doctors', doctorRoutes);
 router.use('/services', serviceRoutes);
+router.use('/projects', projectRoutes);
+router.use('/posts', postRoutes);
 router.use('/content', contentRoutes);
 router.use('/dashboard', dashboardRoutes);
 

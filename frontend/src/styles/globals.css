@@ -67,3 +67,92 @@
     text-wrap: balance;
   }
 }
+/* ============================================================
+   Dark mode — toggled by adding/removing `dark` class on <html>
+   (see src/contexts/ThemeContext.jsx). Overrides the same utility
+   & component classes already used throughout the app so no other
+   files need dark: variants sprinkled through them.
+   ============================================================ */
+html.dark body {
+  background-color: #1b1d21 !important;
+  color: #c7c2b8 !important;
+}
+
+html.dark h1,
+html.dark h2,
+html.dark h3,
+html.dark h4 {
+  color: #f2efe9 !important;
+}
+
+html.dark .bg-cream {
+  background-color: #1b1d21 !important;
+}
+html.dark .bg-cream-dark {
+  background-color: #24272c !important;
+}
+html.dark .bg-cream-darker {
+  background-color: #2e3237 !important;
+}
+html.dark .bg-cream\/95 {
+  background-color: rgba(27, 29, 33, 0.95) !important;
+}
+
+html.dark .text-text-dark {
+  color: #f2efe9 !important;
+}
+html.dark .text-text-body {
+  color: #c7c2b8 !important;
+}
+html.dark .text-text-muted {
+  color: #8f897d !important;
+}
+html.dark .text-text-muted\/20 {
+  color: rgba(143, 137, 125, 0.2) !important;
+}
+html.dark .text-text-muted\/30 {
+  color: rgba(143, 137, 125, 0.3) !important;
+}
+
+html.dark .border-cream-darker {
+  border-color: #33373c !important;
+}
+html.dark .border-cream\/30 {
+  border-color: rgba(51, 55, 60, 0.6) !important;
+}
+
+html.dark .from-cream-dark {
+  --tw-gradient-from: #24272c var(--tw-gradient-from-position) !important;
+}
+html.dark .to-cream-darker {
+  --tw-gradient-to: #2e3237 var(--tw-gradient-to-position) !important;
+}
+
+html.dark .card {
+  background-color: #24272c !important;
+}
+html.dark .form-input {
+  background-color: #1b1d21 !important;
+  border-color: #33373c !important;
+  color: #f2efe9 !important;
+}
+html.dark .form-input::placeholder {
+  color: #8f897d !important;
+}
+html.dark .section-label {
+  color: #8f897d !important;
+}
+
+html.dark ::selection {
+  background: rgba(192, 132, 252, 0.25);
+}
+
+/* Smooth theme transition */
+body,
+.bg-cream,
+.bg-cream-dark,
+.bg-cream-darker,
+.card,
+.form-input {
+  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}

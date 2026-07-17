@@ -5,12 +5,12 @@ import ConfirmDialog from '../../components/admin/ConfirmDialog'
 import useToast from '../../hooks/useToast'
 import api from '../../services/api'
 import { useAdmin } from '../../hooks/useAdmin'
-import { canEditManagement } from '../../utils/permissions'
+import { canManageServices } from '../../utils/permissions'
 
 const AdminServicesPage = () => {
   const toast = useToast()
   const { user } = useAdmin()
-  const canEdit = canEditManagement(user?.role)
+  const canEdit = canManageServices(user)
   const [services, setServices] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)

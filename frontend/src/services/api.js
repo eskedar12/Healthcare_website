@@ -7,8 +7,15 @@ const normalizeBaseUrl = (url) => {
   return url.replace(/\/+$/, '')
 }
 
+const resolvedBaseUrl = normalizeBaseUrl(import.meta.env.VITE_API_BASE_URL) || 'http://localhost:5000/api'
+
+// The backend also serves uploaded content images outside of /api, e.g.
+// http://localhost:5000/uploads/content/xyz.jpg. EditableImage uses this to
+// turn a relative path stored in content JSON into a full URL.
+export const API_ORIGIN = resolvedBaseUrl.replace(/\/api\/?$/, '')
+
 const api = axios.create({
-  baseURL: normalizeBaseUrl(import.meta.env.VITE_API_BASE_URL) || 'http://localhost:5000/api',
+  baseURL: resolvedBaseUrl,
   timeout: 15000,
   headers: {
     'Content-Type': 'application/json',

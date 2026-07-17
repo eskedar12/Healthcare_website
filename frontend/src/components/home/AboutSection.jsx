@@ -2,6 +2,9 @@ import { Link } from 'react-router-dom'
 import SectionLabel from '../ui/SectionLabel'
 import Button from '../ui/Button'
 import useFetch from '../../hooks/useFetch'
+import { useEditableSection } from '../../hooks/useEditableSection'
+import EditableText from '../editable/EditableText'
+import EditableImage from '../editable/EditableImage'
 import clinicBuildingImage from '../../assets/images/homepage.png'
 
 const DEFAULT_TITLE = 'You have lots of reasons to choose us'
@@ -12,8 +15,12 @@ const AboutSection = () => {
   const { data } = useFetch('/content/home')
   const about = data?.data?.about
 
-  const title = about?.title || DEFAULT_TITLE
-  const description = about?.description || DEFAULT_DESCRIPTION
+  const initial = {
+    title: about?.title || DEFAULT_TITLE,
+    description: about?.description || DEFAULT_DESCRIPTION,
+    image: about?.image || null,
+  }
+  const { value, updateField } = useEditableSection('home', 'about', initial)
 
   return (
     <section className="bg-cream py-20 lg:py-28 overflow-hidden">
@@ -22,16 +29,22 @@ const AboutSection = () => {
 
           {/* Left — text */}
           <div>
-            <h2
+            <EditableText
+              as="h2"
+              value={value.title}
+              onChange={(v) => updateField('title', v)}
+              multiline
               className="font-serif text-text-dark leading-tight mb-6 text-balance"
               style={{ fontSize: 'clamp(2rem, 3.5vw, 3rem)' }}
-            >
-              {title}
-            </h2>
+            />
 
-            <p className="font-sans text-text-body text-base leading-relaxed mb-8 max-w-lg">
-              {description}
-            </p>
+            <EditableText
+              as="p"
+              value={value.description}
+              onChange={(v) => updateField('description', v)}
+              multiline
+              className="font-sans text-text-body text-base leading-relaxed mb-8 max-w-lg"
+            />
 
             <Link to="/about">
               <Button variant="outline" size="md">
@@ -42,9 +55,11 @@ const AboutSection = () => {
 
           {/* Right — single full-width image */}
           <div className="relative">
-            <div className="rounded-2xl overflow-hidden h-80 lg:h-[32rem]">
-              <img
-                src={clinicBuildingImage}
+            <div className="relative rounded-2xl overflow-hidden h-80 lg:h-[32rem]">
+              <EditableImage
+                value={value.image}
+                onChange={(v) => updateField('image', v)}
+                fallbackSrc={clinicBuildingImage}
                 alt="Lebeza clinic"
                 className="w-full h-full object-cover"
               />

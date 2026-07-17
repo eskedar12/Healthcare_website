@@ -7,7 +7,7 @@ const publicUser = (user) => {
   delete json.password
   return {
     ...json,
-    permissions: User.getRolePermissions(json.role),
+    permissions: User.getEffectivePermissions(user),
     avatar: json.full_name ? json.full_name.split(' ').map(n => n[0]).join('').toUpperCase() : ''
   }
 }

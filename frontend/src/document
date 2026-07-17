@@ -1,0 +1,61 @@
+# Public Site — Documentation
+
+The patient-facing website for Lebeza Psychiatry Consultation — React + Vite single-page app. No authentication; every page is publicly accessible.
+
+## Tech stack
+- **React** (function components + hooks), **React Router**
+- **Vite** as the build tool/dev server
+- **Axios** for API calls (`services/api.js`)
+- Utility-class styling (same visual system as the admin panel)
+
+## Environment variables
+| Variable | Purpose | Default |
+|---|---|---|
+| `VITE_API_BASE_URL` | Base URL of the backend API | `http://localhost:5001/api` |
+
+## Folder structure
+```
+src/
+├── App.jsx                  Route definitions (all wrapped in the shared Layout)
+├── components/
+│   ├── layout/               Navbar, Footer, Layout (shared header/footer shell)
+│   ├── home/                  Homepage sections: Hero, About, Services, Doctors, Stats bar, Trusted-by
+│   ├── doctors/                DoctorCard, DoctorDetail
+│   ├── services/               ServiceCard, ServiceDetail
+│   ├── news/                    NewsCard, NewsDetail
+│   ├── projects/                PartnersSection
+│   ├── booking/                  BookingForm, BookingConfirmation
+│   └── ui/                        Generic building blocks: Button, Input, Select, Textarea, Modal, LoadingSpinner, SectionLabel/Title, StatCard
+├── pages/                      One component per route (see table below)
+├── services/                   One API-wrapper module per resource (doctorService, serviceService, appointmentService, branchService, departmentService, inquiryService, newsService)
+├── hooks/                       useFetch (generic GET hook), useAppointmentForm, useInquiryForm
+└── utils/                        constants.js (nav links, clinic info, time slots), formatDate.js, validators.js
+```
+
+## Routes
+| Path | Component | Purpose |
+|---|---|---|
+| `/` | `HomePage` | Hero, about, services preview, doctors preview, stats, trusted-by |
+| `/services` | `ServicesPage` | Full services list |
+| `/services/:slug` | `ServiceDetailPage` | Single service detail |
+| `/about` | `AboutPage` | About / mission / values / vision |
+| `/doctors` | `DoctorsPage` | Doctor directory |
+| `/doctors/:id` | `DoctorDetailPage` | Single doctor profile |
+| `/projects` | `ProjectsPage` | Projects/partners |
+| `/contact` | `ContactPage` | Contact info + inquiry form |
+| `/book` | `BookingPage` | Appointment booking form |
+| `*` | `NotFoundPage` | 404 |
+
+## Data flow
+- All pages fetch through the shared `services/api.js` Axios instance, which points at `VITE_API_BASE_URL` and normalizes a few shorthand env-var formats (e.g. a bare `:5001` becomes `http://localhost:5001`).
+- Most page content (page headers, hero copy, etc.) comes from the backend's `/content/:page` endpoint — the **same data the admin panel's Web Editor writes to**. This is what lets the admin's Web Editor preview show real, live site content in an iframe.
+- Doctors/Services/Branches data comes from their respective public `GET` endpoints (no auth required for reads).
+- The **Booking** page and the **Contact** page submit to `POST /appointments` and `POST /inquiries` respectively — both public, unauthenticated endpoints. Submitted inquiries show up in the admin panel's Contact Messages page (gated there by the `view_contact_messages` permission); submitted appointments show up in the admin panel's Appointments page (gated by `view_appointments`/`manage_appointments`).
+
+## Content editing relationship with the Admin panel
+This site has **no admin UI of its own** — everything editable (page headers/copy, doctors, services, branches) is managed from the separate Admin Panel project and simply rendered here. If a page looks wrong or out of date, the fix is almost always in the Admin Panel's Web Editor or the relevant resource page (Doctors/Services/Branches), not in this project's code — unless it's a layout/styling/structural issue, which does live here.
+
+## Running locally
+1. `npm install`
+2. Set `VITE_API_BASE_URL` in a `.env` file if the backend isn't running on the default `http://localhost:5001/api`.
+3. `npm run dev` — starts the Vite dev server (default port 5173; note this is the same default port the Admin Panel's Web Editor preview points at via its own `VITE_SITE_URL`, so make sure only one of the two projects is actually serving on 5173 when testing the live preview).

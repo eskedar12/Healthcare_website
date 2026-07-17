@@ -6,8 +6,7 @@ import {
   updateService,
   deleteService
 } from '../controllers/serviceController.js'
-import { authenticate } from '../middleware/auth.js'
-import { checkRole, ROLES } from '../middleware/roleCheck.js'
+import { authenticate, requirePermission } from '../middleware/auth.js'
 import { validate } from '../middleware/validate.js'
 import {
   createServiceValidation,
@@ -23,7 +22,7 @@ router.get('/:id', serviceIdValidation, validate, getService)
 router.post(
   '/',
   authenticate,
-  checkRole(ROLES.SUPER_ADMIN, ROLES.HOSPITAL_ADMIN),
+  requirePermission('manage_services'),
   createServiceValidation,
   validate,
   createService
@@ -32,7 +31,7 @@ router.post(
 router.put(
   '/:id',
   authenticate,
-  checkRole(ROLES.SUPER_ADMIN, ROLES.HOSPITAL_ADMIN),
+  requirePermission('manage_services'),
   updateServiceValidation,
   validate,
   updateService
@@ -41,7 +40,7 @@ router.put(
 router.delete(
   '/:id',
   authenticate,
-  checkRole(ROLES.SUPER_ADMIN, ROLES.HOSPITAL_ADMIN),
+  requirePermission('manage_services'),
   serviceIdValidation,
   validate,
   deleteService

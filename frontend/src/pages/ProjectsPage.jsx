@@ -1,6 +1,8 @@
 import SectionLabel from '../components/ui/SectionLabel'
 import LoadingSpinner from '../components/ui/LoadingSpinner'
 import useFetch from '../hooks/useFetch'
+import { useEditableSection } from '../hooks/useEditableSection'
+import EditableText from '../components/editable/EditableText'
 import PartnersSection from '../components/projects/PartnersSection'
 
 const FALLBACK_PROJECTS = [
@@ -21,21 +23,31 @@ const DEFAULT_HEADER = {
 const ProjectsPage = () => {
   const { data, loading } = useFetch('/projects')
   const { data: contentData } = useFetch('/content/projects')
-  const header = { ...DEFAULT_HEADER, ...contentData?.data?.header }
-  const projects = data?.projects || FALLBACK_PROJECTS
+  const headerInitial = { ...DEFAULT_HEADER, ...contentData?.data?.header }
+  const { value: header, updateField: updateHeaderField } = useEditableSection(
+    'projects',
+    'header',
+    headerInitial
+  )
+  const projects = data?.data?.length ? data.data : FALLBACK_PROJECTS
 
   return (
     <div className="max-w-7xl mx-auto px-6 lg:px-10 py-16 lg:py-24">
       <div className="text-center">
-        <h1
+        <EditableText
+          as="h1"
+          value={header.title}
+          onChange={(v) => updateHeaderField('title', v)}
           className="font-serif text-text-dark leading-tight mb-4 max-w-3xl mx-auto"
           style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)' }}
-        >
-          {header.title}
-        </h1>
-        <p className="font-sans text-text-body text-base leading-relaxed max-w-xl mx-auto mb-14">
-          {header.description}
-        </p>
+        />
+        <EditableText
+          as="p"
+          value={header.description}
+          onChange={(v) => updateHeaderField('description', v)}
+          multiline
+          className="font-sans text-text-body text-base leading-relaxed max-w-xl mx-auto mb-14"
+        />
       </div>
 
       {loading ? (
@@ -44,58 +56,32 @@ const ProjectsPage = () => {
         </div>
       ) : (
         <>
-          {/* Projects List - Two columns with bold and regular items */}
+          {/* Projects List - Two columns, split evenly, featured items bolded */}
           <div className="bg-cream rounded-2xl p-8 lg:p-12 shadow-sm mb-16">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Left Column - Bold items */}
-              <div className="space-y-4">
-                <div className="flex items-start gap-3 p-3 hover:bg-cream-dark rounded-lg transition-colors">
-                  <span className="text-forest text-lg mt-1">•</span>
-                  <p className="font-sans text-text-body text-base leading-relaxed font-bold">
-                    {projects[0]?.name || 'MHPSS trainings'}
-                  </p>
-                </div>
-                <div className="flex items-start gap-3 p-3 hover:bg-cream-dark rounded-lg transition-colors">
-                  <span className="text-forest text-lg mt-1">•</span>
-                  <p className="font-sans text-text-body text-base leading-relaxed font-bold">
-                    {projects[1]?.name || 'MHPSS staff supervision and mentoring'}
-                  </p>
-                </div>
-                <div className="flex items-start gap-3 p-3 hover:bg-cream-dark rounded-lg transition-colors">
-                  <span className="text-forest text-lg mt-1">•</span>
-                  <p className="font-sans text-text-body text-base leading-relaxed font-bold">
-                    {projects[2]?.name || 'Individual and group counselling services for staff and beneficiaries'}
-                  </p>
-                </div>
-              </div>
-
-              {/* Right Column - Regular items */}
-              <div className="space-y-4">
-                <div className="flex items-start gap-3 p-3 hover:bg-cream-dark rounded-lg transition-colors">
-                  <span className="text-forest text-lg mt-1">•</span>
-                  <p className="font-sans text-text-body text-base leading-relaxed">
-                    {projects[3]?.name || 'Project implementation, monitoring and evaluation'}
-                  </p>
-                </div>
-                <div className="flex items-start gap-3 p-3 hover:bg-cream-dark rounded-lg transition-colors">
-                  <span className="text-forest text-lg mt-1">•</span>
-                  <p className="font-sans text-text-body text-base leading-relaxed">
-                    {projects[4]?.name || 'Mental health related researches'}
-                  </p>
-                </div>
-                <div className="flex items-start gap-3 p-3 hover:bg-cream-dark rounded-lg transition-colors">
-                  <span className="text-forest text-lg mt-1">•</span>
-                  <p className="font-sans text-text-body text-base leading-relaxed">
-                    {projects[5]?.name || 'Mental health need assessment'}
-                  </p>
-                </div>
-                <div className="flex items-start gap-3 p-3 hover:bg-cream-dark rounded-lg transition-colors">
-                  <span className="text-forest text-lg mt-1">•</span>
-                  <p className="font-sans text-text-body text-base leading-relaxed">
-                    {projects[6]?.name || 'MHPSS document preparation'}
-                  </p>
-                </div>
-              </div>
+              {[0, 1].map((col) => {
+                const half = Math.ceil(projects.length / 2)
+                const columnItems = col === 0 ? projects.slice(0, half) : projects.slice(half)
+                return (
+                  <div className="space-y-4" key={col}>
+                    {columnItems.map((project) => (
+                      <div
+                        key={project.id || project.name}
+                        className="flex items-start gap-3 p-3 hover:bg-cream-dark rounded-lg transition-colors"
+                      >
+                        <span className="text-forest text-lg mt-1">•</span>
+                        <p
+                          className={`font-sans text-text-body text-base leading-relaxed ${
+                            project.is_featured ? 'font-bold' : ''
+                          }`}
+                        >
+                          {project.name}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )
+              })}
             </div>
           </div>
 

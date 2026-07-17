@@ -1,18 +1,31 @@
+import logo10 from '../../assets/partners2/logo10.jpg'
+import logo3 from '../../assets/partners2/logo3.jpg'
+import logo4 from '../../assets/partners2/logo4.png'
+import logo9 from '../../assets/partners2/logo9.png'
+import logo11 from '../../assets/partners2/logo11.png'
+import logo22 from '../../assets/partners2/logo22.jpg'
+import logo33 from '../../assets/partners2/logo33.jpg'
+import logo44 from '../../assets/partners2/logo44.jpg'
+import logo55 from '../../assets/partners2/logo55.png'
+import logo66 from '../../assets/partners2/logo66.png'
+import logo77 from '../../assets/partners2/logo77.jpg'
+import logo88 from '../../assets/partners2/logo88.jpg'
+import logo99 from '../../assets/partners2/logo99.png'
+
 const PARTNERS = [
-  { name: 'Médecins Sans Frontières', logo: null },
-  { name: 'Catholic Relief Services', logo: null },
-  { name: 'Amref Health Africa', logo: null },
-  { name: 'Heineken', logo: null },
-  { name: 'IOM — UN Migration', logo: null },
-  { name: 'PAD', logo: null },
-  { name: 'ARRA', logo: null },
-  { name: 'Norwegian Refugee Council', logo: null },
-  { name: 'Oxfam', logo: null },
-  { name: "SOS Children's Villages", logo: null },
-  { name: 'US Embassy Addis Ababa', logo: null },
-  { name: 'Embassy of Ireland', logo: null },
-  { name: 'Jhpiego', logo: null },
-  { name: 'Médecins du Monde', logo: null },
+  { name: 'Catholic Relief Services', logo: logo10 },
+  { name: 'Partner 2', logo: logo3 },
+  { name: 'Partner 3', logo: logo4 },
+  { name: 'Partner 4', logo: logo9 },
+  { name: 'Partner 5', logo: logo11 },
+  { name: 'Partner 6', logo: logo22 },
+  { name: 'Partner 7', logo: logo33 },
+  { name: 'Partner 8', logo: logo44 },
+  { name: 'Partner 9', logo: logo55 },
+  { name: 'Partner 10', logo: logo66 },
+  { name: 'Partner 11', logo: logo77 },
+  { name: 'Partner 12', logo: logo88 },
+  { name: 'Partner 13', logo: logo99 },
 ]
 
 const PartnersSection = () => {
@@ -30,13 +43,13 @@ const PartnersSection = () => {
           {PARTNERS.map((partner) => (
             <div
               key={partner.name}
-              className="flex items-center justify-center h-16"
+              className="flex items-center justify-center h-20 lg:h-24"
             >
               {partner.logo ? (
                 <img
                   src={partner.logo}
                   alt={partner.name}
-                  className="max-h-14 w-auto object-contain opacity-90 hover:opacity-100 transition-opacity"
+                  className="max-h-16 lg:max-h-20 w-auto object-contain hover:scale-105 transition-transform"
                 />
               ) : (
                 <span className="font-sans font-medium text-text-body text-center text-sm lg:text-base leading-snug">

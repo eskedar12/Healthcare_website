@@ -1,9 +1,21 @@
 import { Link } from 'react-router-dom'
+import { CLINIC_INFO } from '../../utils/constants'
+import useFetch from '../../hooks/useFetch'
+import { useEditableSection } from '../../hooks/useEditableSection'
+import EditableText from '../editable/EditableText'
+
+// Logo/name/tagline are shared with the Navbar (page="global", section="navbar")
+// so editing the brand once keeps the header and footer in sync.
+const DEFAULT_BRAND = { symbol: 'Ψ', name: 'Lebeza', tagline: 'PSYCHIATRY' }
+const DEFAULT_FOOTER = {
+  description: `Providing mental health promotion, high quality care and early intervention since ${CLINIC_INFO.founded}.`,
+}
 
 const COMPANY_LINKS = [
   { label: 'Home', to: '/' },
   { label: 'Services', to: '/services' },
   { label: 'About Us', to: '/about' },
+  { label: 'Blog', to: '/blog' },
   { label: 'Projects', to: '/projects' },
   { label: 'Contact Us', to: '/contact' },
 ]
@@ -57,24 +69,95 @@ const SOCIAL_LINKS = [
 ]
 
 const Footer = () => {
+  const { data } = useFetch('/content/global')
+  const brand = data?.data?.navbar
+  const brandValue = {
+    symbol: brand?.symbol || DEFAULT_BRAND.symbol,
+    name: brand?.name || DEFAULT_BRAND.name,
+    tagline: brand?.tagline || DEFAULT_BRAND.tagline,
+  }
+  // Read-only mirror of the navbar's brand fields — edited from the navbar
+  // logo itself, not re-editable here, to avoid two separate save paths for
+  // the same value fighting each other.
+
+  const footerContent = data?.data?.footer
+  const footerInitial = {
+    description: footerContent?.description || DEFAULT_FOOTER.description,
+  }
+  const { value: footerValue, updateField: updateFooterField } = useEditableSection(
+    'global',
+    'footer',
+    footerInitial
+  )
+
   return (
     <footer className="bg-forest text-cream">
       {/* Main footer */}
       <div className="max-w-7xl mx-auto px-6 lg:px-10 py-16 lg:py-20">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
 
           <div className="lg:col-span-1">
             <div className="flex items-center gap-2.5 mb-5">
-              <span className="font-serif font-bold text-cream text-3xl">Ψ</span>
+              <span className="font-serif font-bold text-cream text-3xl">{brandValue.symbol}</span>
               <div>
                 <p className="font-serif font-semibold text-cream text-2xl leading-none">
-                  Lebeza
+                  {brandValue.name}
                 </p>
                 <p className="text-cream/40 text-[0.6rem] tracking-widest uppercase mt-0.5">
-                  PSYCHIATRY
+                  {brandValue.tagline}
                 </p>
               </div>
             </div>
+            <EditableText
+              as="p"
+              value={footerValue.description}
+              onChange={(v) => updateFooterField('description', v)}
+              multiline
+              className="font-sans text-sm text-cream/60 leading-relaxed max-w-xs"
+            />
+          </div>
+
+          {/* Contact / Address */}
+          <div>
+            <h4 className="font-serif text-cream text-lg font-semibold mb-5">
+              Get In Touch
+            </h4>
+            <ul className="flex flex-col gap-3">
+              <li className="font-sans text-sm text-cream/70">
+                <span className="block text-cream/40 text-xs uppercase tracking-widest mb-1">
+                  Address
+                </span>
+                {CLINIC_INFO.location}
+              </li>
+              <li className="font-sans text-sm">
+                <span className="block text-cream/40 text-xs uppercase tracking-widest mb-1">
+                  Phone
+                </span>
+                <a
+                  href={`tel:${CLINIC_INFO.phone.replace(/\s/g, '')}`}
+                  className="text-cream/70 hover:text-cream transition-colors duration-150"
+                >
+                  {CLINIC_INFO.phone}
+                </a>
+              </li>
+              <li className="font-sans text-sm">
+                <span className="block text-cream/40 text-xs uppercase tracking-widest mb-1">
+                  Email
+                </span>
+                <a
+                  href={`mailto:${CLINIC_INFO.email}`}
+                  className="text-cream/70 hover:text-cream transition-colors duration-150"
+                >
+                  {CLINIC_INFO.email}
+                </a>
+              </li>
+              <li className="font-sans text-sm text-cream/70">
+                <span className="block text-cream/40 text-xs uppercase tracking-widest mb-1">
+                  Working Hours
+                </span>
+                {CLINIC_INFO.hours}
+              </li>
+            </ul>
           </div>
 
           {/* Company */}
@@ -119,9 +202,12 @@ const Footer = () => {
 
       {/* Bottom bar with copyright */}
       <div className="border-t border-cream/10">
-        <div className="max-w-7xl mx-auto px-6 lg:px-10 py-5 text-center">
+        <div className="max-w-7xl mx-auto px-6 lg:px-10 py-5 flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
           <p className="text-xs text-cream/30 font-sans">
             Copyright © {new Date().getFullYear()} Lebeza Psychiatry Specialty Clinic | All Rights Reserved
+          </p>
+          <p className="text-xs text-cream/30 font-sans">
+            24/7 urgent care line: {CLINIC_INFO.phone}
           </p>
         </div>
       </div>
