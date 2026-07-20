@@ -48,9 +48,9 @@ const AdminSidebar = () => {
   }
 
   return (
-    <aside className="bg-white w-64 border-r border-cream-darker flex flex-col flex-shrink-0">
+    <aside className="bg-white w-64 border-r border-cream-darker flex flex-col flex-shrink-0 h-full">
       {/* Logo */}
-      <div className="flex items-center gap-2.5 px-6 py-5 border-b border-cream-darker">
+      <div className="flex items-center gap-2.5 px-6 py-5 border-b border-cream-darker flex-shrink-0">
         <span className="font-serif font-bold text-forest text-2xl">Ψ</span>
         <div>
           <p className="font-serif font-semibold text-text-dark text-lg leading-none">
@@ -63,7 +63,7 @@ const AdminSidebar = () => {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-1">
+      <nav className="flex-1 min-h-0 overflow-y-auto px-3 py-4 space-y-1">
         {links.map(({ to, label, icon: Icon }) => (
           <NavLink
             key={to}
@@ -79,7 +79,7 @@ const AdminSidebar = () => {
       </nav>
 
       {/* Logout */}
-      <div className="px-3 py-4 border-t border-cream-darker">
+      <div className="px-3 py-4 border-t border-cream-darker flex-shrink-0">
         <button
           onClick={handleLogout}
           className="sidebar-link w-full text-red-500 hover:bg-red-50"

@@ -7,10 +7,10 @@ dotenv.config()
 const useConnectionString = !!process.env.DATABASE_URL
 
 // SSL not typically needed for local MySQL
-const needsSSL = process.env.NODE_ENV === 'production' && process.env.MYSQL_SSL === 'true'
+const needsSSL = useConnectionString
 
 const commonOptions = {
- dialect: 'postgres',  // <-- CHANGED from 'postgres' to 'mysql'
+  dialect: useConnectionString ? 'postgres' : 'mysql',
   logging: process.env.NODE_ENV === 'development' ? console.log : false,
   pool: {
     max: 10,
@@ -33,11 +33,11 @@ const sequelize = useConnectionString
   ? new Sequelize(process.env.DATABASE_URL, commonOptions)
   : new Sequelize(
       process.env.DB_NAME || 'healthcare',
-      process.env.DB_USER || 'root',      // <-- CHANGED from 'postgres' to 'root'
-      process.env.DB_PASSWORD || 'root',  // <-- CHANGED from '' to 'root'
+      process.env.DB_USER || 'root',
+      process.env.DB_PASSWORD || 'root',
       {
         host: process.env.DB_HOST || 'localhost',
-        port: process.env.DB_PORT || 3306, // <-- CHANGED from 5432 to 3306
+        port: process.env.DB_PORT || 3306,
         ...commonOptions
       }
     )
