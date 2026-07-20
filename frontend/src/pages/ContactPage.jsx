@@ -17,7 +17,7 @@ const DEFAULT_HEADER = {
 }
 
 const ContactPage = () => {
-  const { form, errors, loading, submitted, handleChange, handleSubmit } = useInquiryForm()
+  const { form, errors, loading, submitted, submitError, handleChange, handleSubmit } = useInquiryForm()
   const { data } = useFetch('/content/contact')
   const headerInitial = { ...DEFAULT_HEADER, ...data?.data?.header }
   const { value: header, updateField: updateHeaderField } = useEditableSection(
@@ -111,6 +111,9 @@ const ContactPage = () => {
                 value={form.message} onChange={handleChange('message')}
                 required error={errors.message} rows={5}
               />
+              {submitError && (
+                <p className="text-sm text-red-500 text-center">{submitError}</p>
+              )}
               <Button type="submit" variant="primary" size="lg" disabled={loading} className="w-full justify-center">
                 {loading ? 'Sending...' : 'Send message'}
               </Button>
