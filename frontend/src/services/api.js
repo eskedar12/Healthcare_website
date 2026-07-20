@@ -16,7 +16,11 @@ export const API_ORIGIN = resolvedBaseUrl.replace(/\/api\/?$/, '')
 
 const api = axios.create({
   baseURL: resolvedBaseUrl,
-  timeout: 15000,
+  // Render's free tier spins the backend down after ~15 minutes of
+  // inactivity; the first request after that has to wait for a cold
+  // start, which can take 30-60s. 15s was cutting that off before the
+  // server even finished waking up.
+  timeout: 45000,
   headers: {
     'Content-Type': 'application/json',
   },
