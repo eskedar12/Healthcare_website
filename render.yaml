@@ -27,22 +27,17 @@ services:
           name: healthcare-db
           property: connectionString
 
-      # Cross-service URLs — filled automatically once services deploy
+      # Cross-service URLs — hardcoded to each service's public onrender.com
+      # URL (fromService/host only exposes Render's private-network hostname,
+      # which browsers can't reach). If Render assigns a different URL than
+      # expected (e.g. a name collision suffix), update these to match and
+      # redeploy.
       - key: CLIENT_URL
-        fromService:
-          type: web
-          name: lebeza-frontend
-          property: host
+        value: https://lebeza-frontend.onrender.com
       - key: ADMIN_URL
-        fromService:
-          type: web
-          name: lebeza-admin
-          property: host
+        value: https://lebeza-admin.onrender.com
       - key: API_BASE_URL
-        fromService:
-          type: web
-          name: healthcare-cms-backend
-          property: host
+        value: https://healthcare-cms-backend.onrender.com/api
 
       # Everything below is a secret — Render will prompt you to fill
       # these in the dashboard the first time you deploy (sync: false
@@ -94,16 +89,12 @@ services:
     buildCommand: npm install && npm run build
     staticPublishPath: dist
     envVars:
+      # Baked into the JS bundle at build time — must be the real public
+      # URL (with scheme and /api path), not an internal hostname.
       - key: VITE_API_BASE_URL
-        fromService:
-          type: web
-          name: healthcare-cms-backend
-          property: host
+        value: https://healthcare-cms-backend.onrender.com/api
       - key: VITE_SITE_URL
-        fromService:
-          type: web
-          name: lebeza-frontend
-          property: host
+        value: https://lebeza-frontend.onrender.com
     routes:
       - type: rewrite
         source: /*
@@ -120,10 +111,7 @@ services:
     staticPublishPath: dist
     envVars:
       - key: VITE_API_BASE_URL
-        fromService:
-          type: web
-          name: healthcare-cms-backend
-          property: host
+        value: https://healthcare-cms-backend.onrender.com/api
     routes:
       - type: rewrite
         source: /*
