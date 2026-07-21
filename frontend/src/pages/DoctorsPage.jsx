@@ -1,9 +1,8 @@
 import DoctorCard from '../components/doctors/DoctorCard'
-import LoadingSpinner from '../components/ui/LoadingSpinner'
 import useFetch from '../hooks/useFetch'
 import { useEditableSection } from '../hooks/useEditableSection'
 import EditableText from '../components/editable/EditableText'
-import { CLINICAL_DOCTORS } from '../data/doctors'
+import { TEAM_MEMBERS } from '../data/doctors'
 
 const DEFAULT_HEADER = {
   label: 'Our team',
@@ -13,7 +12,6 @@ const DEFAULT_HEADER = {
 }
 
 const DoctorsPage = () => {
-  const { data, loading } = useFetch('/doctors')
   const { data: contentData } = useFetch('/content/doctors')
   const headerInitial = { ...DEFAULT_HEADER, ...contentData?.data?.header }
   const { value: header, updateField: updateHeaderField } = useEditableSection(
@@ -21,7 +19,9 @@ const DoctorsPage = () => {
     'header',
     headerInitial
   )
-  const doctors = data?.doctors?.length ? data.doctors : CLINICAL_DOCTORS
+  // Same source as the About page's team grid, so the two stay in sync
+  // and doctor IDs used for links match up 1:1.
+  const doctors = TEAM_MEMBERS
 
   return (
     <div className="max-w-7xl mx-auto px-6 lg:px-10 py-16 lg:py-24">
@@ -48,17 +48,11 @@ const DoctorsPage = () => {
         />
       </div>
 
-      {loading ? (
-        <div className="py-24 flex justify-center">
-          <LoadingSpinner size="lg" />
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-          {doctors.map((doctor) => (
-            <DoctorCard key={doctor.id} doctor={doctor} />
-          ))}
-        </div>
-      )}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+        {doctors.map((doctor) => (
+          <DoctorCard key={doctor.id} doctor={doctor} />
+        ))}
+      </div>
     </div>
   )
 }

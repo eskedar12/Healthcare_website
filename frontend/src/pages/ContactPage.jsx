@@ -8,7 +8,6 @@ import useFetch from '../hooks/useFetch'
 import { useEditableSection } from '../hooks/useEditableSection'
 import EditableText from '../components/editable/EditableText'
 import { CLINIC_INFO, CONTACT_SUBJECTS } from '../utils/constants'
-import ChatBot from '../components/chatbot/ChatBot'
 
 const DEFAULT_HEADER = {
   title: "We're here to help.",
@@ -121,8 +120,6 @@ const ContactPage = () => {
           )}
         </div>
       </div>
-
-      <ChatBot />
     </div>
   )
 }

@@ -29,6 +29,7 @@ const Navbar = () => {
   const { pathname } = useLocation()
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const isHome = pathname === '/'
 
   const { editMode } = useEditMode()
   const { data } = useFetch('/content/global')
@@ -58,35 +59,39 @@ const Navbar = () => {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 border-b-2 ${
         scrolled
-          ? 'bg-cream/95 backdrop-blur-md shadow-card border-b border-cream-darker'
-          : 'bg-transparent'
+          ? 'bg-cream/95 backdrop-blur-md shadow-card border-forest/25'
+          : isHome
+            ? 'bg-forest/10 backdrop-blur-sm border-forest/30'
+            : 'bg-cream/80 backdrop-blur-sm border-forest/15'
       }`}
     >
-      <nav className="max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between h-16 lg:h-20">
+      <nav className="max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between h-20 lg:h-24">
 
         {/* Logo */}
-        <LogoTag {...logoProps} className="flex items-center gap-2.5 flex-shrink-0 relative">
-          <EditableText
-            as="span"
-            value={value.symbol}
-            onChange={(v) => updateField('symbol', v)}
-            className="text-forest font-serif font-bold w-10"
-            style={{ fontSize: '1.75rem', lineHeight: 1 }}
-          />
+        <LogoTag {...logoProps} className="flex items-center gap-3 flex-shrink-0 relative">
+          <span className="flex items-center justify-center w-11 h-11 rounded-full bg-forest/10 border border-forest/20 flex-shrink-0">
+            <EditableText
+              as="span"
+              value={value.symbol}
+              onChange={(v) => updateField('symbol', v)}
+              className="text-forest font-serif font-bold"
+              style={{ fontSize: '1.5rem', lineHeight: 1 }}
+            />
+          </span>
           <div className="flex flex-col leading-none">
             <EditableText
               as="span"
               value={value.name}
               onChange={(v) => updateField('name', v)}
-              className="font-serif font-semibold text-text-dark text-lg leading-none"
+              className="font-serif font-semibold text-text-dark text-xl leading-none"
             />
             <EditableText
               as="span"
               value={value.tagline}
               onChange={(v) => updateField('tagline', v)}
-              className="section-label text-[0.6rem] tracking-widest mt-0.5"
+              className="section-label text-[0.65rem] tracking-[0.2em] text-forest/80 mt-1"
             />
           </div>
         </LogoTag>
@@ -96,15 +101,20 @@ const Navbar = () => {
           {NAV_LINKS.map(({ label, to }) => {
             const active = pathname === to
             return (
-              <li key={to}>
+              <li key={to} className="relative py-2">
                 <Link
                   to={to}
                   className={`font-sans text-sm transition-colors duration-150 hover:text-forest ${
-                    active ? 'text-forest font-medium' : 'text-text-body'
+                    active ? 'text-forest font-semibold' : 'text-text-body'
                   }`}
                 >
                   {label}
                 </Link>
+                <span
+                  className={`absolute -bottom-1 left-0 right-0 h-0.5 rounded-full bg-forest transition-transform duration-200 origin-left ${
+                    active ? 'scale-x-100' : 'scale-x-0'
+                  }`}
+                />
               </li>
             )
           })}
@@ -114,7 +124,7 @@ const Navbar = () => {
         <div className="hidden lg:flex items-center gap-4">
           <ThemeToggle />
           <Link to="/book">
-            <Button variant="primary" size="md">
+            <Button variant="primary" size="lg">
               Book here
               <span className="text-xs">↗</span>
             </Button>
@@ -147,6 +157,12 @@ const Navbar = () => {
         </button>
         </div>
       </nav>
+
+      {/* Subtle accent line — only on the home page, before scrolling, to
+          give the navbar its own distinct identity against the hero. */}
+      {isHome && !scrolled && (
+        <div className="h-px bg-gradient-to-r from-transparent via-forest/40 to-transparent" />
+      )}
 
       {/* Mobile menu */}
       <div

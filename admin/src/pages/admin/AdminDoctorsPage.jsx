@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react'
-import { FiPlus, FiEdit, FiTrash2, FiEye } from 'react-icons/fi'
+import { FiPlus, FiEdit, FiTrash2, FiEye, FiToggleLeft, FiToggleRight } from 'react-icons/fi'
 import DoctorForm from '../../components/admin/DoctorForm'
 import ConfirmDialog from '../../components/admin/ConfirmDialog'
 import useToast from '../../hooks/useToast'
 import api, { API_ORIGIN } from '../../services/api'
 import { useAdmin } from '../../hooks/useAdmin'
 import { canManageDoctors } from '../../utils/permissions'
+
+// The public site runs as a separate app — same pattern used in
+// AdminContentPage.jsx for its live-preview links.
+const SITE_URL = import.meta.env.VITE_SITE_URL || 'http://localhost:5173'
 
 const AdminDoctorsPage = () => {
   const toast = useToast()
@@ -59,6 +63,24 @@ const AdminDoctorsPage = () => {
   const handleEdit = (doctor) => {
     setEditingDoctor(doctor)
     setShowForm(true)
+  }
+
+  const handleToggleActive = async (doctor) => {
+    const nextActive = !doctor.is_active
+    // Optimistic update so the UI feels instant
+    setDoctors((prev) => prev.map((doc) =>
+      doc.id === doctor.id ? { ...doc, is_active: nextActive } : doc
+    ))
+    try {
+      await api.put(`/doctors/${doctor.id}`, { is_active: nextActive })
+      toast.success(`${doctor.name} marked as ${nextActive ? 'Active' : 'Inactive'}`)
+    } catch (err) {
+      // Roll back on failure
+      setDoctors((prev) => prev.map((doc) =>
+        doc.id === doctor.id ? { ...doc, is_active: doctor.is_active } : doc
+      ))
+      toast.error(err.response?.data?.message || err.message || 'Failed to update doctor status')
+    }
   }
 
   const handleSave = async (doctorData) => {
@@ -160,11 +182,25 @@ const AdminDoctorsPage = () => {
                       <p className="font-sans text-sm text-text-body">{doctor.title}</p>
                     </div>
                   </div>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    doctor.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                  }`}>
-                    {doctor.isActive ? 'Active' : 'Inactive'}
-                  </span>
+                  {canEdit ? (
+                    <button
+                      type="button"
+                      onClick={() => handleToggleActive(doctor)}
+                      title={doctor.is_active ? 'Click to deactivate' : 'Click to activate'}
+                      className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium transition-colors ${
+                        doctor.is_active ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-red-100 text-red-700 hover:bg-red-200'
+                      }`}
+                    >
+                      {doctor.is_active ? <FiToggleRight className="text-sm" /> : <FiToggleLeft className="text-sm" />}
+                      {doctor.is_active ? 'Active' : 'Inactive'}
+                    </button>
+                  ) : (
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      doctor.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                    }`}>
+                      {doctor.is_active ? 'Active' : 'Inactive'}
+                    </span>
+                  )}
                 </div>
 
                 <div className="mt-4 space-y-2">
@@ -199,9 +235,14 @@ const AdminDoctorsPage = () => {
                       </button>
                     </>
                   )}
-                  <button className="btn-primary flex items-center gap-1 text-sm py-1.5 px-3">
+                  <a
+                    href={`${SITE_URL}/doctors/${doctor.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-primary flex items-center gap-1 text-sm py-1.5 px-3"
+                  >
                     <FiEye /> View
-                  </button>
+                  </a>
                 </div>
               </div>
             </div>

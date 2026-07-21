@@ -3,6 +3,9 @@ import { CLINIC_INFO } from '../../utils/constants'
 import useFetch from '../../hooks/useFetch'
 import { useEditableSection } from '../../hooks/useEditableSection'
 import EditableText from '../editable/EditableText'
+// Place the uploaded Mager Software PLC logo file at this exact path —
+// filename must match, or update the import below to match your file.
+import magerLogo from '../../assets/mager-logo.png'
 
 // Logo/name/tagline are shared with the Navbar (page="global", section="navbar")
 // so editing the brand once keeps the header and footer in sync.
@@ -94,7 +97,7 @@ const Footer = () => {
     <footer className="bg-forest text-cream">
       {/* Main footer */}
       <div className="max-w-7xl mx-auto px-6 lg:px-10 py-16 lg:py-20">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
 
           <div className="lg:col-span-1">
             <div className="flex items-center gap-2.5 mb-5">
@@ -158,6 +161,18 @@ const Footer = () => {
                 {CLINIC_INFO.hours}
               </li>
             </ul>
+          </div>
+
+          {/* Design credit */}
+          <div className="flex flex-col items-center justify-center text-center">
+            <img
+              src={magerLogo}
+              alt="Mager Software PLC"
+              className="w-28 h-28 lg:w-36 lg:h-36 animate-[spin_10s_linear_infinite]"
+            />
+            <p className="text-cream/40 text-[0.65rem] tracking-widest uppercase mt-4">
+              Design by Mager Software PLC
+            </p>
           </div>
 
           {/* Company */}

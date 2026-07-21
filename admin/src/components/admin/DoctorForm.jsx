@@ -23,6 +23,7 @@ const DoctorForm = ({ doctor, onSave, onCancel }) => {
     education: toDisplayString(doctor?.education),
     languages: toDisplayString(doctor?.languages),
     branches: toDisplayString(doctor?.branches),
+    is_active: doctor?.is_active !== undefined ? doctor.is_active : true,
   })
 
   const handleSubmit = (e) => {
@@ -190,6 +191,19 @@ const DoctorForm = ({ doctor, onSave, onCancel }) => {
               className="w-full px-4 py-2 rounded-lg border border-cream-darker focus:border-forest focus:outline-none transition-colors"
               placeholder="Bole Main Clinic, Kazanchis Branch"
             />
+          </div>
+
+          <div className="flex items-center gap-3 rounded-lg border border-cream-darker px-4 py-3">
+            <input
+              type="checkbox"
+              id="doctor-is-active"
+              checked={formData.is_active}
+              onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
+              className="w-4 h-4 accent-forest"
+            />
+            <label htmlFor="doctor-is-active" className="font-sans text-sm text-text-dark cursor-pointer select-none">
+              Active <span className="text-text-muted">— shown on the public site and available for booking</span>
+            </label>
           </div>
 
           <div className="flex gap-3 pt-4 border-t border-cream-darker">

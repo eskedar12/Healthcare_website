@@ -1,13 +1,10 @@
 import SectionLabel from '../ui/SectionLabel'
 import DoctorCard from '../doctors/DoctorCard'
-import LoadingSpinner from '../ui/LoadingSpinner'
-import useFetch from '../../hooks/useFetch'
-import { FEATURED_DOCTORS } from '../../data/doctors'
+import { CLINICAL_DOCTORS } from '../../data/doctors'
+
+const HOME_PREVIEW_DOCTORS = CLINICAL_DOCTORS.slice(0, 6)
 
 const DoctorsPreviewSection = () => {
-  const { data, loading } = useFetch('/doctors')
-  const doctors = data?.doctors?.length ? data.doctors : FEATURED_DOCTORS
-
   return (
     <section className="bg-cream py-20 lg:py-28">
       <div className="max-w-7xl mx-auto px-6 lg:px-10">
@@ -21,22 +18,16 @@ const DoctorsPreviewSection = () => {
           </h2>
         </div>
 
-        {loading ? (
-          <div className="py-16 flex justify-center">
-            <LoadingSpinner size="lg" />
-          </div>
-        ) : (
-          <div className="flex flex-wrap justify-center gap-x-8 gap-y-12">
-            {doctors.map((doctor) => (
-              <div
-                key={doctor.id}
-                className="w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.5rem)]"
-              >
-                <DoctorCard doctor={doctor} />
-              </div>
-            ))}
-          </div>
-        )}
+        <div className="flex flex-wrap justify-center gap-x-8 gap-y-12">
+          {HOME_PREVIEW_DOCTORS.map((doctor) => (
+            <div
+              key={doctor.id}
+              className="w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.5rem)]"
+            >
+              <DoctorCard doctor={doctor} />
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   )

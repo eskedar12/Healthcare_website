@@ -1,22 +1,11 @@
 import { useParams, Link } from 'react-router-dom'
 import DoctorDetail from '../components/doctors/DoctorDetail'
-import LoadingSpinner from '../components/ui/LoadingSpinner'
 import Button from '../components/ui/Button'
-import useFetch from '../hooks/useFetch'
 import { getDoctorById } from '../data/doctors'
 
 const DoctorDetailPage = () => {
   const { id } = useParams()
-  const { data, loading } = useFetch(`/doctors/${id}`)
-  const doctor = data?.doctor || getDoctorById(id)
-
-  if (loading) {
-    return (
-      <div className="py-32 flex justify-center">
-        <LoadingSpinner size="lg" />
-      </div>
-    )
-  }
+  const doctor = getDoctorById(id)
 
   if (!doctor) {
     return (
