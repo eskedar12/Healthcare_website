@@ -35,4 +35,4 @@ api.interceptors.response.use(
   }
 )
 
-export default apicd 
+export default api

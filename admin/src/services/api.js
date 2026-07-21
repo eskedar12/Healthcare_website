@@ -34,8 +34,7 @@ api.interceptors.request.use((config) => {
       config.headers.Authorization = `Bearer ${token}`
     }
   }
-  return config
-})
+  return config})
 
 // Every backend response is wrapped as { success, message, data }. Unwrap it
 // here so callers can just use response.data directly (the array/object
