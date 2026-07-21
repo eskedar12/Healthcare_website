@@ -1,10 +1,19 @@
 import SectionLabel from '../ui/SectionLabel'
 import DoctorCard from '../doctors/DoctorCard'
-import { CLINICAL_DOCTORS } from '../../data/doctors'
-
-const HOME_PREVIEW_DOCTORS = CLINICAL_DOCTORS.slice(0, 6)
+import useFetch from '../../hooks/useFetch'
+import { normalizeDoctor } from '../../utils/doctors'
 
 const DoctorsPreviewSection = () => {
+  // Same live source as the /doctors page, just capped to 6 for the
+  // homepage teaser.
+  const { data } = useFetch('/doctors')
+  const previewDoctors = (data?.data || [])
+    .filter((d) => d.is_active !== false)
+    .slice(0, 6)
+    .map(normalizeDoctor)
+
+  if (previewDoctors.length === 0) return null
+
   return (
     <section className="bg-cream py-20 lg:py-28">
       <div className="max-w-7xl mx-auto px-6 lg:px-10">
@@ -19,7 +28,7 @@ const DoctorsPreviewSection = () => {
         </div>
 
         <div className="flex flex-wrap justify-center gap-x-8 gap-y-12">
-          {HOME_PREVIEW_DOCTORS.map((doctor) => (
+          {previewDoctors.map((doctor) => (
             <div
               key={doctor.id}
               className="w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.5rem)]"

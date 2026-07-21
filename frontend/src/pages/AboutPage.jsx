@@ -8,7 +8,7 @@ import { useEditableSection } from '../hooks/useEditableSection'
 import EditableText from '../components/editable/EditableText'
 import EditableImage from '../components/editable/EditableImage'
 import aboutImage from '../assets/images/about.png'
-import { TEAM_MEMBERS } from '../data/doctors'
+import { normalizeDoctor } from '../utils/doctors'
 
 const STATS = [
   { icon: '◷', value: '24/7', label: 'Working Hours' },
@@ -66,6 +66,14 @@ const mergeDefined = (defaults, incoming) => {
 
 const AboutPage = () => {
   const { data } = useFetch('/content/about')
+
+  // Team grid is pulled live from the admin-managed doctors table, so
+  // adding/editing/removing a doctor in the admin panel shows up here
+  // immediately instead of being frozen at a hardcoded list.
+  const { data: doctorsData } = useFetch('/doctors')
+  const teamMembers = (doctorsData?.data || [])
+    .filter((d) => d.is_active !== false)
+    .map(normalizeDoctor)
 
   const fetchedHeader = mergeDefined(DEFAULT_HEADER, data?.data?.header)
   const headerInitial = { ...fetchedHeader, image: data?.data?.header?.image || null }
@@ -249,7 +257,7 @@ const AboutPage = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-            {TEAM_MEMBERS.map((member) => (
+            {teamMembers.map((member) => (
               <Link
                 to={`/doctors/${member.id}`}
                 key={member.id}

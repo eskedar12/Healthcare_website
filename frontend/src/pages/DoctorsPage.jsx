@@ -2,7 +2,7 @@ import DoctorCard from '../components/doctors/DoctorCard'
 import useFetch from '../hooks/useFetch'
 import { useEditableSection } from '../hooks/useEditableSection'
 import EditableText from '../components/editable/EditableText'
-import { TEAM_MEMBERS } from '../data/doctors'
+import { normalizeDoctor } from '../utils/doctors'
 
 const DEFAULT_HEADER = {
   label: 'Our team',
@@ -19,9 +19,13 @@ const DoctorsPage = () => {
     'header',
     headerInitial
   )
-  // Same source as the About page's team grid, so the two stay in sync
-  // and doctor IDs used for links match up 1:1.
-  const doctors = TEAM_MEMBERS
+
+  // Pulled live from the admin-managed doctors table so anything added,
+  // edited, or removed in the admin panel shows up here immediately.
+  const { data: doctorsData, loading, error } = useFetch('/doctors')
+  const doctors = (doctorsData?.data || [])
+    .filter((d) => d.is_active !== false)
+    .map(normalizeDoctor)
 
   return (
     <div className="max-w-7xl mx-auto px-6 lg:px-10 py-16 lg:py-24">
@@ -47,6 +51,22 @@ const DoctorsPage = () => {
           className="font-sans text-text-body text-base leading-relaxed max-w-2xl mx-auto mb-14"
         />
       </div>
+
+      {loading && (
+        <p className="text-center font-sans text-sm text-text-muted">Loading doctors…</p>
+      )}
+
+      {!loading && error && (
+        <p className="text-center font-sans text-sm text-text-muted">
+          Couldn't load doctors right now. Please try again shortly.
+        </p>
+      )}
+
+      {!loading && !error && doctors.length === 0 && (
+        <p className="text-center font-sans text-sm text-text-muted">
+          No doctors to show yet.
+        </p>
+      )}
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
         {doctors.map((doctor) => (

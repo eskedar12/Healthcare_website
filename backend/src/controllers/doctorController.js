@@ -7,7 +7,9 @@ export const uploadDoctorImage = async (req, res, next) => {
       return sendBadRequest(res, 'No image file provided')
     }
 
-    const url = `/uploads/content/${req.file.filename}`
+    // multer-storage-cloudinary puts the hosted https:// URL in req.file.path
+    // (matches contentController.js's uploadContentImage)
+    const url = req.file.path
     sendSuccess(res, 'Image uploaded successfully', { url })
   } catch (error) {
     next(error)
