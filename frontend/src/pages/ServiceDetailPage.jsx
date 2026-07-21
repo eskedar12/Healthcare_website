@@ -3,12 +3,30 @@ import ServiceDetail from '../components/services/ServiceDetail'
 import LoadingSpinner from '../components/ui/LoadingSpinner'
 import Button from '../components/ui/Button'
 import useFetch from '../hooks/useFetch'
-import { getServiceBySlug } from '../data/services'
+import { useEditableSection } from '../hooks/useEditableSection'
+import SERVICES, { getServiceBySlug } from '../data/services'
 
 const ServiceDetailPage = () => {
   const { slug } = useParams()
-  const { data, loading } = useFetch(`/services/${slug}`)
-  const service = data?.service || getServiceBySlug(slug)
+  const { data: contentData, loading } = useFetch('/content/services')
+
+  // Same canonical "items" array the /services listing page edits — found
+  // here by slug so edits made on either page stay in sync.
+  const itemsInitial = contentData?.data?.items?.length ? contentData.data.items : SERVICES
+  const { value: services, updateAll: updateServicesAll } = useEditableSection(
+    'services',
+    'items',
+    itemsInitial
+  )
+
+  const index = services.findIndex((s) => s.slug === slug)
+  const service = index !== -1 ? services[index] : getServiceBySlug(slug)
+
+  const updateServiceField = (field, fieldValue) => {
+    if (index === -1) return
+    const next = services.map((s, i) => (i === index ? { ...s, [field]: fieldValue } : s))
+    updateServicesAll(next)
+  }
 
   if (loading) {
     return (
@@ -32,7 +50,7 @@ const ServiceDetailPage = () => {
     )
   }
 
-  return <ServiceDetail service={service} />
+  return <ServiceDetail service={service} onFieldChange={updateServiceField} />
 }
 
 export default ServiceDetailPage

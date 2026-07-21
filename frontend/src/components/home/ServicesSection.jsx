@@ -5,8 +5,10 @@ import SERVICES from '../../data/services'
 import ServiceCard from '../services/ServiceCard'
 
 const ServicesSection = () => {
-  const { data, loading } = useFetch('/services')
-  const services = data?.services?.length ? data.services : SERVICES
+  // Same canonical content source as the /services page, so edits made
+  // there (name, description, image) show up here too.
+  const { data: contentData } = useFetch('/content/services')
+  const services = contentData?.data?.items?.length ? contentData.data.items : SERVICES
 
   return (
     <section className="bg-cream-dark py-20 lg:py-28">
@@ -31,8 +33,8 @@ const ServicesSection = () => {
 
         {/* Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {services.map((service) => (
-            <ServiceCard key={service.id} service={service} />
+          {services.slice(0, 6).map((service, i) => (
+            <ServiceCard key={service.id ?? service.slug ?? i} service={service} />
           ))}
         </div>
       </div>

@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import SectionLabel from '../components/ui/SectionLabel'
 import ServiceCard from '../components/services/ServiceCard'
-import LoadingSpinner from '../components/ui/LoadingSpinner'
+import EditableServiceCard from '../components/services/EditableServiceCard'
 import useFetch from '../hooks/useFetch'
 import { useEditableSection } from '../hooks/useEditableSection'
+import { useEditMode } from '../contexts/EditModeContext'
 import EditableText from '../components/editable/EditableText'
 import SERVICES from '../data/services'
 
@@ -15,15 +15,32 @@ const DEFAULT_HEADER = {
 }
 
 const ServicesPage = () => {
-  const { data, loading } = useFetch('/services')
+  const { editMode } = useEditMode()
   const { data: contentData } = useFetch('/content/services')
+
   const headerInitial = { ...DEFAULT_HEADER, ...contentData?.data?.header }
   const { value: header, updateField: updateHeaderField } = useEditableSection(
     'services',
     'header',
     headerInitial
   )
-  const services = data?.services?.length ? data.services : SERVICES
+
+  // The individual service cards (name, description, image) are their own
+  // editable section, stored as one JSON array — same pattern as the
+  // "ourValues" list on the About page. Falls back to the bundled static
+  // list until an admin has saved edits at least once.
+  const itemsInitial = contentData?.data?.items?.length ? contentData.data.items : SERVICES
+  const { value: services, updateAll: updateServicesAll } = useEditableSection(
+    'services',
+    'items',
+    itemsInitial
+  )
+
+  const updateServiceField = (index, field, fieldValue) => {
+    const next = services.map((s, i) => (i === index ? { ...s, [field]: fieldValue } : s))
+    updateServicesAll(next)
+  }
+
   const [layout] = useState('grid')
 
   return (
@@ -51,17 +68,19 @@ const ServicesPage = () => {
         />
       </div>
 
-      {loading ? (
-        <div className="py-24 flex justify-center">
-          <LoadingSpinner size="lg" />
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {services.map((service) => (
-            <ServiceCard key={service.id} service={service} layout={layout} />
-          ))}
-        </div>
-      )}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        {services.map((service, index) =>
+          editMode ? (
+            <EditableServiceCard
+              key={service.id ?? service.slug ?? index}
+              service={service}
+              onFieldChange={(field, value) => updateServiceField(index, field, value)}
+            />
+          ) : (
+            <ServiceCard key={service.id ?? service.slug ?? index} service={service} layout={layout} />
+          )
+        )}
+      </div>
     </div>
   )
 }
