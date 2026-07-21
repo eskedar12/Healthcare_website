@@ -9,16 +9,16 @@ export const createInquiry = async (req, res, next) => {
 
     const inquiry = await ContactMessage.create({ name, email, phone, subject, message })
 
-    // Don't let a broken mail server fail the whole request — the
-    // message is already saved, so we log the mail error and still
-    // tell the visitor their message went through.
-    try {
-      await sendContactNotification({ name, email, phone, subject, message })
-    } catch (mailError) {
-      console.error('⚠️ Failed to send contact notification email:', mailError.message)
-    }
-
+    // Respond right away — the message is already saved, so the visitor's
+    // request should never wait on (or fail because of) the mail server.
     sendCreated(res, 'Thank you, your message has been sent.', inquiry)
+
+    // Fire the notification email in the background. Some hosts block or
+    // are very slow on outbound SMTP, which used to make this whole request
+    // hang/time out client-side even though the message was already saved.
+    sendContactNotification({ name, email, phone, subject, message }).catch((mailError) => {
+      console.error('⚠️ Failed to send contact notification email:', mailError.message)
+    })
   } catch (error) {
     next(error)
   }
