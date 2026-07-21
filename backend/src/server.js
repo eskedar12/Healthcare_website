@@ -12,12 +12,16 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'https://lebeza-frontend.onrender.com'
+  ],
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Serve uploaded content images (e.g. /uploads/content/167...-a1b2.jpg)
-
 
 // Routes
 app.use('/api', routes);

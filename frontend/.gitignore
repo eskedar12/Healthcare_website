@@ -4,3 +4,4 @@ dist-ssr
 *.local
 .env.local
 .DS_Store
+VITE_API_URL=https://healthcare-cms-backend.onrender.com
