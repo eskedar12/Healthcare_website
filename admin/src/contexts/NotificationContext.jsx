@@ -5,24 +5,17 @@ import { canViewContactMessages, canEditAppointments, canViewNotifications } fro
 
 const NotificationContext = createContext(null)
 
-// Notifications are synthesized on every fetch from "Pending" appointments
-// and "New" contact messages — there's no dedicated notifications table on
-// the backend, so "read" isn't a real field we can PATCH. Instead we keep
-// the set of read notification ids in localStorage, so marking something
-// read survives a refresh instead of resetting the moment the list is
-// rebuilt from scratch. Entries are pruned to whatever's currently in the
-// fetched list, so the stored set never grows unbounded.
 const READ_STORAGE_KEY = 'adminReadNotificationIds'
 
 const SUBJECT_LABELS = {
-  general: 'General inquiry',
-  appointment: 'Appointment question',
-  billing: 'Billing & insurance',
-  feedback: 'Feedback',
-  other: 'Other',
+  general: 'General Inquiry',
+  appointment: 'Appointment Question',
+  billing: 'Billing & Insurance',
+  feedback: 'Feedback & Suggestions',
+  other: 'Other Inquiry',
 }
 
-const formatSubject = (subject) => SUBJECT_LABELS[subject] || subject || ''
+const formatSubject = (subject) => SUBJECT_LABELS[subject] || subject || 'General Inquiry'
 
 const loadReadIds = () => {
   try {
@@ -38,8 +31,7 @@ const saveReadIds = (idsSet) => {
   try {
     localStorage.setItem(READ_STORAGE_KEY, JSON.stringify([...idsSet]))
   } catch {
-    // Ignore storage errors (e.g. private browsing quota) — read state just
-    // won't persist across refreshes in that case.
+    // Ignore storage errors
   }
 }
 
@@ -54,7 +46,7 @@ export const NotificationProvider = ({ children }) => {
     try {
       const newNotifications = []
 
-      // Fetch new appointments
+      // Fetch pending appointments
       if (canEditAppointments(user)) {
         try {
           const apptRes = await api.get('/appointments', { params: { status: 'Pending' } })
@@ -63,8 +55,8 @@ export const NotificationProvider = ({ children }) => {
             newNotifications.push({
               id: `appt-${appt.id}`,
               type: 'appointment',
-              title: 'New Appointment',
-              message: `${appt.patient_name} booked an appointment for ${appt.date} at ${appt.time}`,
+              title: 'New Appointment Booking',
+              message: `Appointment booked by ${appt.patient_name} for ${appt.date} at ${appt.time}`,
               createdAt: appt.created_at,
               read: false,
               link: '/admin/appointments',
@@ -81,11 +73,17 @@ export const NotificationProvider = ({ children }) => {
           const msgRes = await api.get('/inquiries')
           const newMessages = (msgRes.data || []).filter(msg => msg.status === 'New')
           newMessages.forEach(msg => {
+            const subjectStr = formatSubject(msg.subject)
+            const textSnippet = (msg.message || '').trim()
+            const messagePreview = textSnippet
+              ? (textSnippet.length > 50 ? `${textSnippet.substring(0, 50)}...` : textSnippet)
+              : subjectStr
+
             newNotifications.push({
               id: `msg-${msg.id}`,
               type: 'contact',
-              title: 'New Contact Message',
-              message: `${msg.name}: ${formatSubject(msg.subject) || msg.message.substring(0, 50)}...`,
+              title: 'New Contact Form Message',
+              message: `Contact Form submission from ${msg.name}: "${messagePreview}"`,
               createdAt: msg.created_at,
               read: false,
               link: '/admin/contact',
@@ -99,17 +97,15 @@ export const NotificationProvider = ({ children }) => {
       // Sort by date, newest first
       newNotifications.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
 
-      // Re-apply any read state that was persisted from before this fetch
-      // (e.g. a page refresh), and drop stale ids for notifications that no
-      // longer exist so storage doesn't grow forever.
       const readIds = loadReadIds()
       const currentIds = new Set(newNotifications.map(n => n.id))
       const prunedReadIds = new Set([...readIds].filter(id => currentIds.has(id)))
       if (prunedReadIds.size !== readIds.size) saveReadIds(prunedReadIds)
 
       const withReadState = newNotifications.map(n => ({ ...n, read: prunedReadIds.has(n.id) }))
+      const unreadItems = withReadState.filter(n => !n.read)
       setNotifications(withReadState)
-      setUnreadCount(withReadState.filter(n => !n.read).length)
+      setUnreadCount(unreadItems.length)
     } catch (err) {
       console.error('Failed to fetch notifications:', err)
     }
@@ -131,7 +127,6 @@ export const NotificationProvider = ({ children }) => {
     setUnreadCount(prev => Math.max(0, prev - 1))
   }
 
-  // Poll for new notifications every 30 seconds
   useEffect(() => {
     if (user && canViewNotifications(user)) {
       fetchNotifications()
@@ -145,6 +140,7 @@ export const NotificationProvider = ({ children }) => {
       value={{
         notifications,
         unreadCount,
+        badgeCount: unreadCount,
         showDropdown,
         setShowDropdown,
         markAllAsRead,
