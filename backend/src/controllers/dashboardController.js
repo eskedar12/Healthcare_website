@@ -4,7 +4,8 @@ import { sendSuccess } from '../utils/response.js'
 
 export const getDashboardStats = async (req, res, next) => {
   try {
-    const today = new Date().toISOString().split('T')[0]
+    const d = new Date()
+    const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 
     const [
       appointmentsToday,

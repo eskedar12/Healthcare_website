@@ -9,6 +9,11 @@
     "dev": "nodemon server.js",
     "seed": "node src/seeders/initialAdmin.js",
     "seed:roles": "node src/seeders/roleUsers.js",
+    "seed:services": "node src/seedServices.js",
+    "seed:projects": "node src/seedProjects.js",
+    "seed:posts": "node src/seedBlogPosts.js",
+    "seed:doctors": "node src/seedDoctors.js",
+    "seed:all": "node src/seeders/initialAdmin.js && node src/seeders/roleUsers.js && node src/seedServices.js && node src/seedProjects.js && node src/seedBlogPosts.js && node src/seedDoctors.js",
     "sync": "node sync-db.js"
   },
   "dependencies": {
