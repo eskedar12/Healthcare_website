@@ -1,3 +1,11 @@
+import net from 'node:net'
+import dns from 'node:dns'
+
+if (net.setDefaultAutoSelectFamily) {
+  net.setDefaultAutoSelectFamily(false)
+}
+dns.setDefaultResultOrder('ipv4first')
+
 import { Sequelize } from 'sequelize'
 import dotenv from 'dotenv'
 

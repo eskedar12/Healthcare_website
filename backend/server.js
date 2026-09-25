@@ -1,82 +1,50 @@
-import express from 'express'
-import cors from 'cors'
 import dotenv from 'dotenv'
-import helmet from 'helmet'
-import morgan from 'morgan'
-import compression from 'compression'
-import sequelize from './src/config/database.js'
-import models from './src/models/index.js'
-
-// Load env vars
 dotenv.config()
 
-const app = express()
-const PORT = process.env.PORT || 5001
+import dns from 'node:dns'
+// Windows machines frequently have broken/unreachable IPv6 routing. Node's
+// default DNS resolution tries IPv6 first, so every connection attempt to
+// Neon times out (ETIMEDOUT / AggregateError) before it ever falls back to
+// IPv4. Forcing IPv4-first fixes this without touching anything else.
+dns.setDefaultResultOrder('ipv4first')
 
-// Middleware
-app.use(cors())
-app.use(helmet())
-app.use(morgan('dev'))
-app.use(compression())
+import express from 'express'
+import cors from 'cors'
+import helmet from 'helmet'
+import routes from './src/routes/index.js'
+import { errorHandler } from './src/middleware/errorHandler.js'
+import sequelize from './src/config/database.js'
+
+const app = express()
+const PORT = process.env.PORT || 5000
+
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }))
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'http://localhost:3001',
+  ],
+  credentials: true
+}))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
-// Routes
-import routes from './src/routes/index.js'
 app.use('/api', routes)
 
-// Health check
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: 'Server is running' })
-})
+app.use(errorHandler)
 
-// Error handler
-app.use((err, req, res, next) => {
-  console.error(err.stack)
-  res.status(err.status || 500).json({
-    error: err.message || 'Internal Server Error'
-  })
-})
-
-// Try syncing models with a retry for transient deadlocks
-const syncModelsWithRetry = async (attempts = 3, delayMs = 1000) => {
-  for (let attempt = 1; attempt <= attempts; attempt += 1) {
-    try {
-      await sequelize.sync({ alter: true })
-      console.log('✅ Models synchronized.')
-      return
-    } catch (error) {
-      const isDeadlock = error.parent?.errno === 1213 || error.parent?.sqlState === '40001' || /Deadlock found/.test(error.message)
-      const isDuplicateKeys = error.parent?.errno === 1069 || /Too many keys specified/.test(error.message)
-
-      if (isDuplicateKeys) {
-        console.warn('⚠️ Model sync ALTER failed due to existing indexes. Falling back to plain sync without alter.')
-        await sequelize.sync()
-        console.log('✅ Models synchronized with plain sync.')
-        return
-      }
-
-      if (!isDeadlock || attempt === attempts) {
-        throw error
-      }
-      console.warn(`⚠️ Deadlock during sync attempt ${attempt}, retrying in ${delayMs}ms...`)
-      await new Promise((resolve) => setTimeout(resolve, delayMs))
-    }
-  }
-}
-
-// Start server
-const startServer = async () => {
+async function startServer() {
   try {
-    // Test database connection
     await sequelize.authenticate()
-    console.log('✅ Database connection established.')
+    console.log('✅ Database connected successfully!')
 
-    // Sync models with retries for transient deadlocks
-    await syncModelsWithRetry()
+    await sequelize.sync()
+    console.log('✅ Database synced!')
 
     app.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`)
+      console.log(`📡 API base URL: http://localhost:${PORT}/api`)
     })
   } catch (error) {
     console.error('❌ Failed to start server:', error)
@@ -85,5 +53,3 @@ const startServer = async () => {
 }
 
 startServer()
-
-export default app
