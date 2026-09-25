@@ -19,12 +19,23 @@ export const createAppointment = (payload) => {
   const normalizedPayload = {
     patient_name: payload.patientName || payload.patient_name,
     phone: payload.phone || payload.patient_phone,
-    patient_email: payload.email || payload.patient_email,
-    service: payload.service || payload.department,
     date: payload.preferredDate || payload.date,
     time: convertTo24Hour(payload.preferredTime || payload.time),
-    notes: payload.notes,
   }
+
+  // Only send email when the user typed one — an empty string fails
+  // backend isEmail validation and used to silently drop bookings.
+  const email = (payload.email || payload.patient_email || '').trim()
+  if (email) normalizedPayload.patient_email = email
+
+  // Appointment model has no dedicated service column; fold the chosen
+  // service into notes so staff still see it in the admin panel.
+  const serviceLabel = payload.serviceName || payload.service || payload.department
+  const notes = (payload.notes || '').trim()
+  const noteParts = []
+  if (serviceLabel) noteParts.push(`Service: ${serviceLabel}`)
+  if (notes) noteParts.push(notes)
+  if (noteParts.length) normalizedPayload.notes = noteParts.join('\n')
 
   const branchValue = payload.branch || payload.branch_id
   if (branchValue && !isNaN(Number(branchValue))) {

@@ -53,10 +53,9 @@ const useAppointmentForm = () => {
       await createAppointment(form)
       setSubmitted(true)
     } catch (err) {
-      // Backend not reachable yet — still confirm to the user so the
-      // front-end flow can be demoed independently of the API.
-      setSubmitted(true)
-      setSubmitError(err)
+      setSubmitError(
+        err?.message || 'Could not submit your booking. Please try again.'
+      )
     } finally {
       setLoading(false)
     }

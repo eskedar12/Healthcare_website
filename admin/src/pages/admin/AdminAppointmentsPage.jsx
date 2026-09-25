@@ -137,12 +137,22 @@ const AdminAppointmentsPage = () => {
       const payload = {
         patient_name: formData.patient_name,
         phone: formData.phone,
-        email: formData.email,
-        service: formData.service,
         date: formData.date,
         time: convertTo24Hour(formData.time),
         notes: formData.notes,
         status: formData.status,
+      }
+
+      if (formData.email?.trim()) {
+        payload.email = formData.email.trim()
+      }
+
+      // Fold service name into notes (no dedicated column on appointments)
+      if (formData.service) {
+        const serviceNote = `Service: ${formData.service}`
+        payload.notes = formData.notes
+          ? `${serviceNote}\n${formData.notes}`
+          : serviceNote
       }
 
       if (formData.branch && !isNaN(Number(formData.branch))) {

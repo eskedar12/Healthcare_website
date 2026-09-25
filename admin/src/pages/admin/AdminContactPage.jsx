@@ -11,6 +11,21 @@ const STATUS_OPTIONS = [
   { value: 'Replied', label: 'Replied', color: 'bg-green-100 text-green-700' },
 ]
 
+// Contact form used to store subject keys like "appointment"; map those
+// (and the newer human-readable values) so the list doesn't look identical.
+const SUBJECT_LABELS = {
+  general: 'General inquiry',
+  appointment: 'Appointment question',
+  billing: 'Billing & insurance',
+  feedback: 'Feedback',
+  other: 'Other',
+}
+
+const formatSubject = (subject) => {
+  if (!subject) return ''
+  return SUBJECT_LABELS[subject] || subject
+}
+
 const AdminContactPage = () => {
   const toast = useToast()
   const { user } = useAdmin()
@@ -145,7 +160,7 @@ const AdminContactPage = () => {
                   </div>
                   {msg.subject && (
                     <p className="font-sans text-sm text-text-body mt-2 truncate">
-                      {msg.subject}
+                      {formatSubject(msg.subject)}
                     </p>
                   )}
                   <p className="font-sans text-xs text-text-muted mt-1">
@@ -181,7 +196,7 @@ const AdminContactPage = () => {
                       Subject
                     </p>
                     <p className="font-sans text-sm text-text-body">
-                      {selectedMessage.subject}
+                      {formatSubject(selectedMessage.subject)}
                     </p>
                   </div>
                 )}

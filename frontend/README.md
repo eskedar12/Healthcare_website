@@ -164,7 +164,7 @@ Created by the seed scripts above (`npm run seed` and `npm run seed:roles` in `b
 
 | Role | Email | Password | What they can do |
 |---|---|---|---|
-| Super Admin | `admin@healthcare.com` | `Admin@123` | Full access to everything |
+| Super Admin | `admin@lebeza.com` (from `ADMIN_EMAIL` in `backend/.env`) | value of `ADMIN_PASSWORD` in `backend/.env` (default `Admin@123`) | Full access to everything |
 | Reception Officer | `reception@lebeza.com` | `Reception@123` | Book/manage appointments; view (but not edit) Doctors, Services, Branches; no access to the Web Editor |
 | Content Editor | `editor@lebeza.com` | `Editor@123` | Edit the public site's text via the Web Editor; view (but not edit) everything else |
 

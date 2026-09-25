@@ -35,7 +35,7 @@ export const createAppointmentValidation = [
     .optional()
     .notEmpty().withMessage('Patient phone is required'),
   body(['patient_email', 'email'])
-    .optional()
+    .optional({ values: 'falsy' })
     .isEmail().withMessage('Please provide a valid email address')
     .normalizeEmail(),
   body(['date', 'preferred_date', 'preferredDate'])
@@ -45,17 +45,15 @@ export const createAppointmentValidation = [
     .optional()
     .matches(timePattern).withMessage('Invalid time format (HH:MM)'),
   body('branch_id')
-    .optional()
+    .optional({ values: 'falsy' })
     .isInt().withMessage('Branch ID must be an integer'),
   body('branch')
-    .optional()
+    .optional({ values: 'falsy' })
     .isString().withMessage('Branch must be a string'),
   body('department')
-    .optional()
-    .isString(),
+    .optional({ values: 'falsy' }),
   body('service')
-    .optional()
-    .isString(),
+    .optional({ values: 'falsy' }),
   body('doctor_id')
     .optional()
     .isInt().withMessage('Doctor ID must be an integer'),

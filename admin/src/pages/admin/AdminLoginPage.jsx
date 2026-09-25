@@ -57,7 +57,7 @@ const AdminLoginPage = () => {
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 className="w-full px-4 py-2 rounded-lg border border-cream-darker focus:border-forest focus:outline-none transition-colors"
-                placeholder="admin@lebeza.org"
+                placeholder="admin@lebeza.com"
                 required
               />
             </div>

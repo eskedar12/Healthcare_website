@@ -24,11 +24,25 @@ export const TIME_SLOTS = [
 ].map((t) => ({ value: t, label: t }))
 
 export const CONTACT_SUBJECTS = [
-  { value: 'general', label: 'General inquiry' },
-  { value: 'appointment', label: 'Appointment question' },
-  { value: 'billing', label: 'Billing & insurance' },
-  { value: 'feedback', label: 'Feedback' },
-  { value: 'other', label: 'Other' },
+  { value: 'General inquiry', label: 'General inquiry' },
+  { value: 'Appointment question', label: 'Appointment question' },
+  { value: 'Billing & insurance', label: 'Billing & insurance' },
+  { value: 'Feedback', label: 'Feedback' },
+  { value: 'Other', label: 'Other' },
 ]
 
-export default { NAV_LINKS, CLINIC_INFO, TIME_SLOTS, CONTACT_SUBJECTS }
+// Maps older stored subject keys (and current values) to display labels
+export const CONTACT_SUBJECT_LABELS = {
+  general: 'General inquiry',
+  appointment: 'Appointment question',
+  billing: 'Billing & insurance',
+  feedback: 'Feedback',
+  other: 'Other',
+  'General inquiry': 'General inquiry',
+  'Appointment question': 'Appointment question',
+  'Billing & insurance': 'Billing & insurance',
+  Feedback: 'Feedback',
+  Other: 'Other',
+}
+
+export default { NAV_LINKS, CLINIC_INFO, TIME_SLOTS, CONTACT_SUBJECTS, CONTACT_SUBJECT_LABELS }

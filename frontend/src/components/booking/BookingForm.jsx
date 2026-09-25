@@ -12,7 +12,7 @@ const TIME_SLOTS = [
 ].map((t) => ({ value: t, label: t }))
 
 const BookingForm = ({ branches = [], services = [], doctors = [] }) => {
-  const { form, errors, loading, submitted, handleChange, handleSubmit } =
+  const { form, errors, loading, submitted, submitError, handleChange, handleSubmit } =
     useAppointmentForm()
 
   if (submitted) {
@@ -89,12 +89,12 @@ const BookingForm = ({ branches = [], services = [], doctors = [] }) => {
           onChange={handleChange('service')}
           options={
             services.length > 0
-              ? services.map((s) => ({ value: s.id, label: s.name }))
+              ? services.map((s) => ({ value: s.name, label: s.name }))
               : [
-                  { value: 'adult-psychiatry', label: 'Adult Psychiatry' },
-                  { value: 'child-adolescent', label: 'Child & Adolescent' },
-                  { value: 'psychology', label: 'Clinical Psychology' },
-                  { value: 'psychotherapy', label: 'Psychotherapy' },
+                  { value: 'Adult Psychiatry', label: 'Adult Psychiatry' },
+                  { value: 'Child & Adolescent', label: 'Child & Adolescent' },
+                  { value: 'Clinical Psychology', label: 'Clinical Psychology' },
+                  { value: 'Psychotherapy', label: 'Psychotherapy' },
                 ]
           }
           required
@@ -109,11 +109,10 @@ const BookingForm = ({ branches = [], services = [], doctors = [] }) => {
           options={
             doctors.length > 0
               ? doctors.map((d) => ({ value: d.id, label: d.name }))
-              : [
-                  { value: 'no-preference', label: 'No preference' },
-                  { value: '1', label: 'Dr. Amir Bekele' },
-                  { value: '2', label: 'Dr. Sara Tadesse' },
-                ]
+              // Doctors haven't loaded yet (or the request failed) — only
+              // offer "no preference" so we can never submit a fake doctor
+              // ID that doesn't exist in the database.
+              : [{ value: 'no-preference', label: 'No preference' }]
           }
         />
 
@@ -153,6 +152,11 @@ const BookingForm = ({ branches = [], services = [], doctors = [] }) => {
 
       {/* Submit */}
       <div className="mt-8">
+        {submitError && (
+          <p className="font-sans text-sm text-red-500 text-center mb-3">
+            {submitError}
+          </p>
+        )}
         <Button
           type="submit"
           variant="primary"

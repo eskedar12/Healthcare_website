@@ -14,6 +14,16 @@ const NotificationContext = createContext(null)
 // fetched list, so the stored set never grows unbounded.
 const READ_STORAGE_KEY = 'adminReadNotificationIds'
 
+const SUBJECT_LABELS = {
+  general: 'General inquiry',
+  appointment: 'Appointment question',
+  billing: 'Billing & insurance',
+  feedback: 'Feedback',
+  other: 'Other',
+}
+
+const formatSubject = (subject) => SUBJECT_LABELS[subject] || subject || ''
+
 const loadReadIds = () => {
   try {
     const raw = localStorage.getItem(READ_STORAGE_KEY)
@@ -75,7 +85,7 @@ export const NotificationProvider = ({ children }) => {
               id: `msg-${msg.id}`,
               type: 'contact',
               title: 'New Contact Message',
-              message: `${msg.name}: ${msg.subject || msg.message.substring(0, 50)}...`,
+              message: `${msg.name}: ${formatSubject(msg.subject) || msg.message.substring(0, 50)}...`,
               createdAt: msg.created_at,
               read: false,
               link: '/admin/contact',
