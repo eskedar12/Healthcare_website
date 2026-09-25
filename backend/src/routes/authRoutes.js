@@ -1,4 +1,5 @@
 import express from 'express';
+import rateLimit from 'express-rate-limit';
 import { 
   register, 
   login, 
@@ -17,8 +18,22 @@ import {
 
 const router = express.Router();
 
+// Brute-force protection on login: 10 attempts per 15 minutes per IP.
+// Successful logins don't count against the limit.
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true,
+  message: {
+    success: false,
+    message: 'Too many login attempts. Please try again in a few minutes.'
+  }
+});
+
 // Public routes
-router.post('/login', loginValidation, validate, login);
+router.post('/login', loginLimiter, loginValidation, validate, login);
 router.post('/refresh-token', refreshTokenValidation, validate, refreshToken);
 
 // Protected routes

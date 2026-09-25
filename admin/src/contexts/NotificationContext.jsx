@@ -46,6 +46,12 @@ export const NotificationProvider = ({ children }) => {
     try {
       const newNotifications = []
 
+      // Track whether each category's fetch actually succeeded this round.
+      // A failed/slow request must never be mistaken for "this notification
+      // doesn't exist anymore" — that's what was un-reading everything.
+      let appointmentsFetchOk = false
+      let messagesFetchOk = false
+
       // Fetch pending appointments
       if (canEditAppointments(user)) {
         try {
@@ -62,9 +68,13 @@ export const NotificationProvider = ({ children }) => {
               link: '/admin/appointments',
             })
           })
+          appointmentsFetchOk = true
         } catch (err) {
           console.error('Failed to fetch appointments for notifications:', err)
         }
+      } else {
+        // User has no permission to see these at all — nothing to prune.
+        appointmentsFetchOk = true
       }
 
       // Fetch new contact messages
@@ -89,9 +99,12 @@ export const NotificationProvider = ({ children }) => {
               link: '/admin/contact',
             })
           })
+          messagesFetchOk = true
         } catch (err) {
           console.error('Failed to fetch messages for notifications:', err)
         }
+      } else {
+        messagesFetchOk = true
       }
 
       // Sort by date, newest first
@@ -99,7 +112,19 @@ export const NotificationProvider = ({ children }) => {
 
       const readIds = loadReadIds()
       const currentIds = new Set(newNotifications.map(n => n.id))
-      const prunedReadIds = new Set([...readIds].filter(id => currentIds.has(id)))
+      // Only drop a stored "read" id if it's genuinely gone (not in this
+      // round's results AND that category's fetch actually succeeded). If
+      // the fetch for its category failed this round, keep it as-is instead
+      // of guessing — that's what stopped already-read items from
+      // reappearing as unread whenever one request hiccuped.
+      const prunedReadIds = new Set(
+        [...readIds].filter(id => {
+          if (currentIds.has(id)) return true
+          if (id.startsWith('appt-')) return !appointmentsFetchOk
+          if (id.startsWith('msg-')) return !messagesFetchOk
+          return false
+        })
+      )
       if (prunedReadIds.size !== readIds.size) saveReadIds(prunedReadIds)
 
       const withReadState = newNotifications.map(n => ({ ...n, read: prunedReadIds.has(n.id) }))
