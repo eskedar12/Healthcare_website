@@ -42,7 +42,3 @@ I worked on the redesign and development of the website, focusing on the fronten
 ## 🚀 Deployment
 
 The redesigned website is deployed using Render.
-
-## 📄 License
-
-This project was developed for learning and professional portfolio purposes.
