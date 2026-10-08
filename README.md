@@ -2,15 +2,15 @@
 
 A modern redesign of the Lebeza Psychiatry Hospital website, developed to improve the overall user experience, accessibility, navigation, and responsiveness.
 
-## 🌐 Live Demo
+##  Live Demo
 
 https://lebeza-website.onrender.com
 
-## 📌 Original Website
+##  Original Website
 
 https://lebeza.org/
 
-## ✨ Features
+##  Features
 
 - Modern and clean user interface
 - Fully responsive design
@@ -20,7 +20,7 @@ https://lebeza.org/
 - Responsive pages for desktop, tablet, and mobile
 - Improved presentation of healthcare services and information
 
-## 🛠️ Technologies Used
+##  Technologies Used
 
 - React
 - JavaScript
@@ -31,14 +31,14 @@ https://lebeza.org/
 - Express.js
 - Git & GitHub
 
-## 🎯 Project Goal
+## Project Goal
 
 The goal of this project was to redesign the existing Lebeza website with a more modern and accessible interface while making the content easier for users to navigate and interact with.
 
-## 👩‍💻 My Role
+## My Role
 
 I worked on the redesign and development of the website, focusing on the frontend interface, responsive layouts, accessibility, navigation, and overall user experience.
 
-## 🚀 Deployment
+##  Deployment
 
 The redesigned website is deployed using Render.
