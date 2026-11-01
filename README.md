@@ -29,7 +29,6 @@ https://lebeza.org/
 - Tailwind CSS
 - Node.js
 - Express.js
-- Git & GitHub
 
 ## Project Goal
 
