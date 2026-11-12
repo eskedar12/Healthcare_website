@@ -20,7 +20,9 @@ https://lebeza.org/
 - Responsive pages for desktop, tablet, and mobile
 - Improved presentation of healthcare services and information
 
-##  Technologies Used
+##  Technologies Us
+
+used
 
 - React
 - JavaScript
