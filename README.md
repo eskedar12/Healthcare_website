@@ -39,7 +39,3 @@ The goal of this project was to redesign the existing Lebeza website with a more
 ## My Role
 
 I worked on the redesign and development of the website, focusing on the frontend interface, responsive layouts, accessibility, navigation, and overall user experience.
-
-##  Deployment
-
-The redesigned website is deployed using Render.
