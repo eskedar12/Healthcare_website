@@ -26,7 +26,6 @@ used
 
 - React
 - JavaScript
-- CSS3
 - Tailwind CSS
 - Node.js
 - Express.js
